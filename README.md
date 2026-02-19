@@ -12,5 +12,8 @@ Prasca Pedraza Kheylor Daniel<br>
 
 <img width="1128" height="368" alt="image" src="https://github.com/user-attachments/assets/03f2e690-f7a6-4541-b5eb-510a139cd1f6" />
 
+# 1.1) Mision
+la mision del agente es enseñar a su estudiante sobre el calculo matematico de la forma mas clara y excelente posible.
+
 ### Resumen
 El perfil de nuestro agente es ser un profesor de calculo que pueda enseñar a sus estudiantes de forma avanzada utilizando visuales y explicaciones lo mas claras posibles y en conjunto con el estudiante va a ir descubriendo formas de aprender calculo.
