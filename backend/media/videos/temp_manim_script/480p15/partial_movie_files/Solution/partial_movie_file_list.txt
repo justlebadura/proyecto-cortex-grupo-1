@@ -1,0 +1,5 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/lebadura/Documentos/GitHub/larksync-web/proyecto-cortex-grupo-1/backend/media/videos/temp_manim_script/480p15/partial_movie_files/Solution/1584795214_1739566138_223132457.mp4'
+file 'file:/home/lebadura/Documentos/GitHub/larksync-web/proyecto-cortex-grupo-1/backend/media/videos/temp_manim_script/480p15/partial_movie_files/Solution/4072820271_669104851_3585678018.mp4'
+file 'file:/home/lebadura/Documentos/GitHub/larksync-web/proyecto-cortex-grupo-1/backend/media/videos/temp_manim_script/480p15/partial_movie_files/Solution/4072820271_920914259_3919873406.mp4'
+file 'file:/home/lebadura/Documentos/GitHub/larksync-web/proyecto-cortex-grupo-1/backend/media/videos/temp_manim_script/480p15/partial_movie_files/Solution/4072820271_4277570474_2621357156.mp4'

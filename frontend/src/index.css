@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .glass-panel {
+    @apply backdrop-blur-2xl bg-black/40 border-t border-l border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)];
+  }
+  
+  .glass-button {
+    @apply backdrop-blur-md bg-white/5 hover:bg-white/10 border border-white/5 transition-all duration-300 active:scale-95 text-gray-300 hover:text-white rounded-xl;
+  }
+  
+  .glass-input {
+    @apply bg-black/40 border border-white/10 focus:border-white/30 focus:ring-1 focus:ring-white/30 text-white placeholder-gray-500 transition-all rounded-xl backdrop-blur-sm;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-500;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    border: 2px solid rgba(0,0,0,0); /* Creates padding around thumb */
+    background-clip: padding-box;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+    border: 2px solid rgba(0,0,0,0);
+    background-clip: padding-box;
+  }
+
+  /* Liquid Background Effect */
+  .liquid-bg {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(20,20,20,1) 0%, rgba(5,5,5,1) 50%, rgba(0,0,0,1) 100%);
+    opacity: 0.8;
+  }
+
+  .liquid-glass {
+    background: rgba(255, 255, 255, 0.01);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .liquid-glass-strong {
+    background: rgba(10, 10, 10, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  @keyframes liquid-drift {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(-2%, -2%) rotate(1deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+  }
+}
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    background-color: #000000;
+  }
+  
+  /* LaTeX adjustments */
+  .katex-display {
+    margin: 1.5em 0 !important;
+    padding: 1em 0 !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  
+  .katex {
+    font-size: 1.1em !important;
+  }
+}

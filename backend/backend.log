@@ -1,0 +1,10 @@
+INFO:     Started server process [16058]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:59828 - "OPTIONS /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59844 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55994 - "OPTIONS /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56004 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60174 - "OPTIONS /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60186 - "POST /chat HTTP/1.1" 200 OK
