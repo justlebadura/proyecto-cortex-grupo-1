@@ -22,4 +22,6 @@ El perfil de nuestro agente es ser un profesor de calculo que pueda enseñar a s
 
 <img width="1076" height="754" alt="Graph" src="https://github.com/user-attachments/assets/db778299-7d6d-4c46-a4d2-7c28cdee7e09" />
 
+# 2.1) Justificacion
 Elegimos estos valores pensando en lo que una inteligencia artificial que desempeña el rol de Profesor de calculo debería ser capaz de hacer. En procesamiento lingüístico (6), ya que debería poder explicar con claridad y adaptarse al nivel del estudiante. En aprendizaje y memoria (6), debería manejar mucha información y recordar el proceso dentro de la clase. En pensamiento y razonamiento (8), debería destacar porque la lógica y la resolución de problemas matemáticos son precisamente su mayor fortaleza. En atención (6), debería mantener el enfoque durante toda la explicación y seguir los pasos correctamente. Finalmente, en emoción (1), porque su funcion no es simular empatia sino enseñar al estudiante.
+
