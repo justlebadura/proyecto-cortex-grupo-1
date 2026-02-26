@@ -17,3 +17,8 @@ la mision del agente es enseñar a su estudiante sobre el calculo matematico de 
 
 ### Resumen
 El perfil de nuestro agente es ser un profesor de calculo que pueda enseñar a sus estudiantes de forma avanzada utilizando visuales y explicaciones lo mas claras posibles y en conjunto con el estudiante va a ir descubriendo formas de aprender calculo.
+
+## 2) NECESIDAD DE CADA PROCESO 
+
+<img width="1076" height="754" alt="Graph" src="https://github.com/user-attachments/assets/db778299-7d6d-4c46-a4d2-7c28cdee7e09" />
+<img width="1076" height="754" alt="Graph" src="https://github.com/user-attachments/assets/db778299-7d6d-4c46-a4d2-7c28cdee7e09" />
