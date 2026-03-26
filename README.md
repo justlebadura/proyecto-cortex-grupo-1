@@ -63,5 +63,18 @@ Esta base de conocimiento representa la estructura de memoria de una IA que act�
 
 A continuación, se muestra la organización de estas categorías.
 
-<img width="951" height="618" alt="Captura de pantalla 2026-03-26 100345" src="https://github.com/user-attachments/assets/f0bc1411-dcbb-47dd-b32b-634565a5410a" />
+## Esquema de Memoria
+
+| Tipo de memoria     | Categoría            | Tipo de contenido        | Ejemplo                          | Uso en el bot                  |
+|---------------------|----------------------|--------------------------|----------------------------------|--------------------------------|
+| LTM Semántica       | Aritmética           | Operaciones básicas      | Suma, resta, multiplicación      | Resolver ejercicios simples    |
+| LTM Semántica       | Álgebra              | Ecuaciones               | 2x + 3 = 7                       | Explicar y resolver ecuaciones |
+| LTM Semántica       | Geometría            | Fórmulas                 | Área del círculo = πr²           | Calcular áreas y perímetros    |
+| LTM Semántica       | Trigonometría        | Razones trigonométricas  | sen, cos, tan                    | Resolver triángulos            |
+| LTM Semántica       | Cálculo              | Derivadas                | d/dx (x²) = 2x                   | Explicar cambios y pendientes  |
+| LTM Semántica       | Estadística          | Medidas                  | Media, mediana, moda             | Analizar datos                 |
+| LTM Semántica       | Fórmulas importantes | Fórmulas clave           | Fórmula general cuadrática       | Resolver ecuaciones            |
+| LTM Semántica       | Reglas               | Propiedades              | Propiedad distributiva           | Simplificar expresiones        |
+| LTM Semántica       | Ejemplos             | Problemas resueltos      | Ejercicio paso a paso            | Enseñar con ejemplos           |
+| LTM Episódica       | Errores comunes      | Conceptos mal entendidos | Confundir signos                 | Corregir al estudiante         |
 
