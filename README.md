@@ -56,10 +56,6 @@ else:
     procesar_full_text(mensaje)
 ```
 
-# FASE 3
-
-## 1)Esquema de la Base de Conocimiento
-
 
 
 
