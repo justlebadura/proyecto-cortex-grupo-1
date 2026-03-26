@@ -54,3 +54,14 @@ if len(mensaje.split()) > 500:
     ejecutar_atencion(input_procesable)
 else:
     procesar_full_text(mensaje)
+```
+
+# FASE 3
+
+## 1)Esquema de la Base de Conocimiento
+
+
+
+
+
+
