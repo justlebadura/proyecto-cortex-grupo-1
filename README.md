@@ -56,8 +56,9 @@ else:
     procesar_full_text(mensaje)
 ```
 
+# FASE 3
 
+## 1) Esquema de la Base de Conocimiento
 
-
-
+<img width="951" height="618" alt="Captura de pantalla 2026-03-26 100345" src="https://github.com/user-attachments/assets/f0bc1411-dcbb-47dd-b32b-634565a5410a" />
 
