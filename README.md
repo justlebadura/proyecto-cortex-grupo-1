@@ -78,3 +78,9 @@ A continuación, se muestra la organización de estas categorías.
 | LTM Semántica       | Ejemplos             | Problemas resueltos      | Ejercicio paso a paso            | Enseñar con ejemplos           |
 | LTM Episódica       | Errores comunes      | Conceptos mal entendidos | Confundir signos                 | Corregir al estudiante         |
 
+## 2)  Diseñando la "Ventana de Contexto"
+La ventana de contexto representa la memoria de trabajo de la IA durante la conversación. En esta “caja” temporal se almacenan los últimos mensajes intercambiados con el estudiante, lo que permite mantener coherencia en el diálogo y responder de manera adecuada.
+
+Cuando la conversación supera el límite de la ventana, los mensajes más antiguos se eliminan para dar espacio a los nuevos, mientras que la memoria a largo plazo conserva el conocimiento y el historial del estudiante para asegurar la adaptación continua.
+<img width="1749" height="786" alt="Captura de pantalla 2026-03-26 104418" src="https://github.com/user-attachments/assets/c8fd9141-30f8-499f-834f-870b52293434" />
+
