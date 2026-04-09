@@ -85,3 +85,4 @@ Cuando la conversación supera el límite de la ventana, los mensajes más antig
 
 <img width="1749" height="786" alt="Captura de pantalla 2026-03-26 104418" src="https://github.com/user-attachments/assets/c8fd9141-30f8-499f-834f-870b52293434" />
 
+<img width="838" height="535" alt="image" src="https://github.com/user-attachments/assets/0937ea07-b4d4-411a-a806-0c502e8b432b" />
