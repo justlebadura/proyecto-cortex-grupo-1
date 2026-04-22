@@ -77,6 +77,44 @@ if uc_key:
     except:
         print("Warning: UltraContext connection failed")
 
+uc_fail_count = 0
+
+
+def is_uc_context_not_found_error(err: Exception) -> bool:
+    txt = str(err or "").lower()
+    return "context not found" in txt or "http 404" in txt
+
+
+def uc_safe_get(context_id: str):
+    global uc_client, uc_fail_count
+    if not uc_client:
+        return None
+    try:
+        return uc_client.get(context_id)
+    except Exception as e:
+        if not is_uc_context_not_found_error(e):
+            print(f"UltraContext get error: {e}")
+        uc_fail_count += 1
+        if uc_fail_count >= 3:
+            uc_client = None
+            print("Warning: UltraContext disabled after repeated failures")
+        return None
+
+
+def uc_safe_append(context_id: str, payload: dict):
+    global uc_client, uc_fail_count
+    if not uc_client:
+        return
+    try:
+        uc_client.append(context_id, payload)
+    except Exception as e:
+        if not is_uc_context_not_found_error(e):
+            print(f"UltraContext append error: {e}")
+        uc_fail_count += 1
+        if uc_fail_count >= 3:
+            uc_client = None
+            print("Warning: UltraContext disabled after repeated failures")
+
 import subprocess
 import shutil
 
@@ -537,27 +575,66 @@ def build_runtime_system_prompt(visualization_mode: str) -> str:
     return SYSTEM_PROMPT + mode_note + runtime_config_note
 
 
+def apply_selective_attention(user_msg: str):
+    """
+    Fase 2.2 - Filtro de ruido:
+    Si el mensaje supera 500 palabras, prioriza entidades clave y la instrucción final.
+    """
+    text = (user_msg or "").strip()
+    words = re.findall(r"\b\w+\b", text, flags=re.UNICODE)
+    if len(words) <= 500:
+        return text, False
+
+    stopwords = {
+        "de", "la", "el", "los", "las", "un", "una", "unos", "unas", "y", "o", "u", "a", "en", "con",
+        "por", "para", "que", "se", "del", "al", "lo", "le", "les", "su", "sus", "mi", "mis", "tu", "tus",
+        "es", "son", "ser", "estar", "como", "pero", "si", "no", "ya", "muy", "mas", "más", "esto", "esta",
+        "este", "estas", "estos", "eso", "esa", "ese", "esas", "esos", "tambien", "también", "porque", "donde",
+        "cuando", "quien", "quienes", "cual", "cuales", "qué", "cuál", "cuáles", "cómo", "dónde", "cuándo",
+    }
+
+    tokens = re.findall(r"[A-Za-zÁÉÍÓÚáéíóúÑñÜü]{4,}", text)
+    scored = []
+    seen = set()
+    for token in tokens:
+        t = token.lower()
+        if t in stopwords or t in seen:
+            continue
+        seen.add(t)
+        scored.append(t)
+
+    key_entities = scored[:24]
+
+    sentences = re.split(r"(?<=[\.!?])\s+", text)
+    final_sentence = ""
+    for s in reversed(sentences):
+        if s and s.strip():
+            final_sentence = s.strip()
+            break
+
+    compact = (
+        "[ATENCION SELECTIVA ACTIVADA]\n"
+        f"Entidades clave: {', '.join(key_entities) if key_entities else 'no detectadas'}\n"
+        f"Instruccion final prioritaria: {final_sentence if final_sentence else text[-280:]}\n"
+        "Nota: el mensaje original excede 500 palabras y fue resumido para optimizar foco cognitivo."
+    )
+    return compact, True
+
+
 def get_context(context_id, user_msg, visualization_mode="manim"):
     runtime_prompt = build_runtime_system_prompt(visualization_mode)
     messages = [{"role": "system", "content": runtime_prompt}]
     
     # Recuperar historial de UltraContext
-    if uc_client:
-        try:
-            # Obtener historial guardado
-            historial = uc_client.get(context_id)
-            if historial and "data" in historial:
-                for msg in historial["data"]:
-                    # Mapear formato UltraContext -> Azure System/User/Assistant
-                    role = msg.get("role")
-                    content = msg.get("content")
-                    
-                    if role == "user":
-                        messages.append({"role": "user", "content": content})
-                    elif role == "assistant":
-                        messages.append({"role": "assistant", "content": content})
-        except Exception as e:
-            print(f"Error recuperando contexto: {e}")
+    historial = uc_safe_get(context_id)
+    if historial and "data" in historial:
+        for msg in historial["data"]:
+            role = msg.get("role")
+            content = msg.get("content")
+            if role == "user":
+                messages.append({"role": "user", "content": content})
+            elif role == "assistant":
+                messages.append({"role": "assistant", "content": content})
     
     # Añadir el mensaje actual del usuario al final
     messages.append({"role": "user", "content": user_msg})
@@ -834,6 +911,39 @@ def normalize_markdown_response(text: str) -> str:
     return normalized
 
 
+def enforce_catedratico_guardrails(text: str) -> str:
+    """
+    Aplica guardrails mínimos sin destruir la estructura académica del prompt base.
+    """
+    if not text:
+        return text
+
+    cleaned = text
+
+    # Elimina emojis para respetar la guía de estilo.
+    emoji_pattern = re.compile(
+        "["
+        "\U0001F300-\U0001F5FF"
+        "\U0001F600-\U0001F64F"
+        "\U0001F680-\U0001F6FF"
+        "\U0001F900-\U0001F9FF"
+        "\U0001FA70-\U0001FAFF"
+        "]+",
+        flags=re.UNICODE,
+    )
+    cleaned = emoji_pattern.sub("", cleaned)
+
+    # Si el cierre activo falta, añade una transición de cátedra.
+    if "### 5. Transicion de Catedra" not in cleaned:
+        cleaned = (
+            cleaned.strip()
+            + "\n\n### 5. Transicion de Catedra\n\n"
+            + "Plantee un contraejemplo donde esta tecnica falle o pierda eficiencia, y justifique formalmente por que ocurre."
+        )
+
+    return cleaned.strip()
+
+
 def inject_code_section_if_missing(full_text: str, code_blocks) -> str:
     """Si la respuesta no trae bloque de código visible, lo agrega en la sección de código."""
     if not full_text or not code_blocks:
@@ -947,14 +1057,11 @@ async def chat_endpoint(request: ChatRequest):
     user_msg = request.message
     visualization_mode = normalize_visualization_mode(request.visualization_mode)
     llm_failed = False
+    focused_user_msg, attention_applied = apply_selective_attention(user_msg)
     
     # 1. Guardar mensaje usuario (UltraContext) - SIN MODIFICAR (Raw)
     # Guardamos lo que el usuario dijo exactamente para que quede constancia.
-    if uc_client:
-        try: 
-            uc_client.append(context_id, {"role": "user", "content": user_msg})
-        except Exception as e: 
-            print(f"Error guardando mensaje usuario: {e}")
+    uc_safe_append(context_id, {"role": "user", "content": user_msg})
 
     # 2. Generar respuesta con Contexto Completo (recuperado)
     try:
@@ -962,7 +1069,7 @@ async def chat_endpoint(request: ChatRequest):
             raise Exception("Cliente GitHub Models no configurado (falta GITHUB_TOKEN)")
 
         # Usar la función helper que ahora recupera el historial real
-        messages = get_context(context_id, user_msg, visualization_mode)
+        messages = get_context(context_id, focused_user_msg, visualization_mode)
 
         completion_text = call_llm_with_messages(
             messages,
@@ -991,7 +1098,7 @@ async def chat_endpoint(request: ChatRequest):
                     "role": "system",
                     "content": runtime_prompt + "\n\nINSTRUCCIÓN ADICIONAL: Devuelve exclusivamente un bloque de código Manim ejecutable."
                 },
-                {"role": "user", "content": build_force_code_prompt(user_msg, require_manim=True)},
+                    {"role": "user", "content": build_force_code_prompt(focused_user_msg, require_manim=True)},
             ]
             forced_manim_text = normalize_markdown_response(
                 call_llm_with_messages(
@@ -1018,7 +1125,7 @@ async def chat_endpoint(request: ChatRequest):
                         "role": "system",
                         "content": runtime_prompt + "\n\nINSTRUCCIÓN ADICIONAL: Devuelve exclusivamente un bloque de código Python con Matplotlib ejecutable."
                     },
-                    {"role": "user", "content": build_force_code_prompt(user_msg, prefer_matplotlib=True)},
+                    {"role": "user", "content": build_force_code_prompt(focused_user_msg, prefer_matplotlib=True)},
                 ]
                 forced_matplotlib_text = normalize_markdown_response(
                     call_llm_with_messages(
@@ -1048,7 +1155,7 @@ async def chat_endpoint(request: ChatRequest):
                     "role": "system",
                     "content": runtime_prompt + "\n\nINSTRUCCIÓN ADICIONAL: Devuelve exclusivamente bloques de código ejecutables."
                 },
-                {"role": "user", "content": build_force_code_prompt(user_msg)},
+                    {"role": "user", "content": build_force_code_prompt(focused_user_msg)},
             ]
             forced_text = normalize_markdown_response(
                 call_llm_with_messages(
@@ -1075,7 +1182,12 @@ async def chat_endpoint(request: ChatRequest):
 
     # Garantiza formato legible aunque el modelo responda plano.
     if not is_provider_error_text(full_text):
-        full_text = enforce_structured_markdown(full_text, code_blocks)
+        full_text = enforce_catedratico_guardrails(full_text)
+        if attention_applied:
+            full_text = (
+                "[Atencion selectiva activada: se priorizaron entidades clave y la instruccion final del mensaje extenso.]\n\n"
+                + full_text
+            )
     
     final_output = ""
     final_img = None
@@ -1127,13 +1239,9 @@ async def chat_endpoint(request: ChatRequest):
                 final_img = img
             if vid:
                 final_vid = vid # Gu (MEMORIA SELECTIVA)
-    if uc_client:
-        try: 
-            # Aplicamos la compresión antes de guardar
-            texto_memoria = procesar_para_memoria(full_text, "assistant")
-            uc_client.append(context_id, {"role": "assistant", "content": texto_memoria})
-        except Exception as e: 
-            print(f"Error guardando memoria: {e}")
+    # Aplicamos la compresión antes de guardar
+    texto_memoria = procesar_para_memoria(full_text, "assistant")
+    uc_safe_append(context_id, {"role": "assistant", "content": texto_memoria})
 
     return ChatResponse(
         response=full_text,

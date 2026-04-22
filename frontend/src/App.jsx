@@ -19,7 +19,7 @@ import {
   Send, Terminal, Image as ImageIcon, Loader2, PlayCircle, BookOpen, 
   Atom, ChevronRight, ChevronLeft, ChevronDown, Download, X, 
   Settings, Bot, Monitor, Maximize2, Minimize2, Cpu, 
-  Calculator, Sigma, FunctionSquare, MoreHorizontal, Trash2, Search, Type
+    Sigma, FunctionSquare, MoreHorizontal, Trash2, Search, Type
 } from 'lucide-react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
@@ -233,9 +233,7 @@ const Visualizer = ({ media, onClose }) => {
         {/* Media Content */}
         <div className="relative w-full h-[80vh] flex items-center justify-center rounded-3xl overflow-hidden border border-white/10 shadow-[0_0_100px_rgba(255,255,255,0.05)] bg-[#050505]">
              {isVideo ? (
-                 <video controls autoPlay loop className="w-full h-full object-contain">
-                     <source src={`data:video/mp4;base64,${data}`} type="video/mp4"/>
-                 </video>
+                 <VideoPlayer b64data={data} className="w-full h-full object-contain"/>
              ) : (
                  <img src={`data:image/png;base64,${data}`} className="w-full h-full object-contain" alt="Visualization" />
              )}
@@ -266,40 +264,100 @@ const Visualizer = ({ media, onClose }) => {
 const CodeBlock = ({ language, codeStr, media, onOpenMedia, ...props }) => {
   const isInternal = ['python', 'manim', 'bash'].includes(language.toLowerCase());
   const [isOpen, setIsOpen] = useState(!isInternal);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (e) => {
+    e.preventDefault();
+    navigator.clipboard.writeText(codeStr).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const langIconMap = {
+    python: <Cpu size={12} className="text-emerald-400"/>,
+    manim: <PlayCircle size={12} className="text-purple-400"/>,
+    bash: <Terminal size={12} className="text-yellow-400"/>,
+  };
+  const langIcon = langIconMap[language.toLowerCase()] || <Terminal size={12} className="text-gray-400"/>;
 
   return (
-    <details className="my-4 rounded-xl overflow-hidden border border-white/10 shadow-lg bg-[#050505] group/code transition-all duration-300" open={isOpen} onToggle={(e) => setIsOpen(e.target.open)}>
-      <summary className="flex items-center justify-between px-3 py-2 bg-white/5 border-b border-white/5 cursor-pointer hover:bg-white/10 transition-colors list-none select-none">
-          <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-gray-500 uppercase flex items-center gap-1.5 font-bold tracking-wider">
-                  {isInternal ? <Cpu size={12} className="text-white"/> : <Terminal size={12} className="text-gray-400"/>}
-                  {language} Source
-              </span>
-              <ChevronDown size={12} className={`text-gray-600 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}/>
+    <div className="my-5 rounded-xl overflow-hidden border border-white/[0.08] shadow-xl bg-[#0d0d0d] group/code">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-2.5 bg-white/[0.04] border-b border-white/[0.06]">
+        <button
+          onClick={(e) => { e.preventDefault(); setIsOpen(v => !v); }}
+          className="flex items-center gap-2 text-left"
+        >
+          <div className="flex gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-500/60"/>
+            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60"/>
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/60"/>
           </div>
-          <div className="flex items-center gap-3">
-              {/* If media exists, show action button directly in header */}
-              {media && !isOpen && (
-                 <button 
-                    onClick={(e) => {
-                        e.preventDefault();
-                        onOpenMedia(media);
-                    }}
-                    className="flex items-center gap-1.5 px-2 py-1 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded text-xs font-bold uppercase tracking-wider transition-all hover:scale-105 active:scale-95"
-                 >
-                    <PlayCircle size={10} />
-                    <span>Run</span>
-                 </button>
-              )}
-              
-              {!isOpen && !media && <span className="text-[9px] text-gray-600 uppercase tracking-widest animate-pulse">Internal Logic</span>}
-              <div className="flex gap-1.5"><div className="w-2 h-2 rounded-full bg-white/10"></div><div className="w-2 h-2 rounded-full bg-white/20"></div><div className="w-2 h-2 rounded-full bg-white/30"></div></div>
-          </div>
-      </summary>
-      <div className="relative animate-in slide-in-from-top-2 fade-in duration-200">
-          <SyntaxHighlighter {...props} children={codeStr} style={vscDarkPlus} language={language} PreTag="div" customStyle={{margin:0, padding:'1rem', background:'transparent', fontSize:'0.8em'}} />
+          <span className="ml-2 flex items-center gap-1.5 text-[11px] font-mono font-bold text-gray-400 uppercase tracking-widest">
+            {langIcon} {language}
+          </span>
+          <ChevronDown size={11} className={`text-gray-600 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}/>
+        </button>
+        <div className="flex items-center gap-2">
+          {/* Copy button */}
+          <button onClick={handleCopy}
+            className="px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider rounded border transition-all duration-150
+              border-white/10 text-gray-500 hover:text-white hover:border-white/30 hover:bg-white/5 active:scale-95"
+          >
+            {copied ? '✓ Copiado' : 'Copiar'}
+          </button>
+          {/* RUN button */}
+          {media && (
+            <button
+              onClick={(e) => { e.preventDefault(); onOpenMedia(media); }}
+              className="flex items-center gap-1.5 px-3 py-1 rounded border text-[10px] font-mono font-bold uppercase tracking-wider transition-all duration-150
+                bg-emerald-500/15 border-emerald-500/40 text-emerald-300
+                hover:bg-emerald-500/30 hover:border-emerald-400/60 hover:text-emerald-200
+                active:scale-95 shadow-[0_0_12px_rgba(52,211,153,0.15)]"
+            >
+              <PlayCircle size={11}/> Ver resultado
+            </button>
+          )}
+        </div>
       </div>
-    </details>
+      {/* Code body */}
+      {isOpen && (
+        <div className="relative animate-in slide-in-from-top-1 fade-in duration-200">
+          <SyntaxHighlighter
+            {...props}
+            children={codeStr}
+            style={vscDarkPlus}
+            language={language}
+            PreTag="div"
+            customStyle={{ margin: 0, padding: '1.1rem 1.25rem', background: 'transparent', fontSize: '0.82em', lineHeight: '1.7' }}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- VIDEO PLAYER (blob URL para compatibilidad cross-browser) ---
+const VideoPlayer = ({ b64data, className }) => {
+  const [blobUrl, setBlobUrl] = useState(null);
+  useEffect(() => {
+    const bytes = atob(b64data);
+    const arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    const blob = new Blob([arr], { type: 'video/mp4' });
+    const url = URL.createObjectURL(blob);
+    setBlobUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [b64data]);
+
+  if (!blobUrl) return (
+    <div className={`${className} flex items-center justify-center bg-black/60 rounded-lg`}>
+      <Loader2 size={24} className="animate-spin text-white/40"/>
+    </div>
+  );
+  return (
+    <video controls loop className={className} src={blobUrl}/>
   );
 };
 
@@ -308,22 +366,45 @@ const Message = ({ role, content, media, onOpenMedia }) => {
   const isUser = role === 'user';
 
   return (
-    <div className={`flex w-full mb-8 ${isUser ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-500`}>
+    <div className={`flex w-full mb-10 ${isUser ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-500`}>
        <div className={`
-          relative max-w-[95%] lg:max-w-[85%] rounded-[30px] p-6 shadow-[0_4px_30px_rgba(0,0,0,0.1)] border backdrop-blur-[15px] transition-all duration-300
+          relative rounded-[24px] border backdrop-blur-[15px] transition-all duration-300
           ${isUser 
-             ? 'bg-white/10 text-white rounded-br-sm border-white/10 hover:border-white/20' 
-             : 'bg-white/[0.03] text-gray-200 rounded-bl-sm border-white/[0.05] hover:border-white/10 hover:bg-white/[0.05]'}
+             ? 'max-w-[80%] lg:max-w-[70%] p-4 px-5 bg-white/10 text-white rounded-br-sm border-white/10 hover:border-white/20 shadow-[0_2px_20px_rgba(0,0,0,0.2)]' 
+             : 'w-full max-w-full p-7 bg-white/[0.03] text-gray-200 rounded-bl-sm border-white/[0.06] hover:border-white/10 hover:bg-white/[0.05] shadow-[0_4px_30px_rgba(0,0,0,0.15)]'}
        `}>
           {/* Avatar Name for AI */}
           {!isUser && (
-             <div className="flex items-center gap-2 mb-4 text-[10px] font-bold tracking-[0.2em] text-gray-500 uppercase border-b border-white/5 pb-2">
-                 <Bot size={14} className="text-white"/> Jhan AI <span className="text-gray-700 mx-1">|</span> v2.0
+             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-white/[0.06]">
+               <div className="w-7 h-7 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                 <Bot size={14} className="text-emerald-400"/>
+               </div>
+               <div className="flex items-center gap-2">
+                 <span className="text-xs font-bold text-emerald-400/90 tracking-wide">Jhan AI</span>
+                 <span className="text-[10px] text-gray-600 font-mono">v2.0</span>
+               </div>
              </div>
           )}
 
           {/* Markdown Content */}
-          <div className={`prose prose-sm prose-invert max-w-none prose-p:leading-7 prose-headings:text-gray-100 prose-headings:font-bold prose-headings:tracking-tight prose-h1:mb-6 prose-h2:mt-6 prose-h2:mb-5 prose-h2:border-b prose-h2:border-white/10 prose-h2:pb-1 prose-h3:mt-5 prose-h3:mb-5 prose-h4:mt-5 prose-h4:mb-5 prose-code:text-emerald-200 prose-pre:border prose-pre:border-white/10 prose-pre:bg-black/50 prose-pre:mb-5 prose-pre:mt-4 prose-blockquote:mb-5 prose-blockquote:border-l-4 prose-blockquote:border-emerald-500/50 prose-blockquote:bg-white/5 prose-blockquote:py-3 prose-blockquote:px-4 prose-a:text-white prose-a:underline prose-a:underline-offset-4 prose-strong:text-white`}>
+          <div className={`prose prose-base prose-invert max-w-none
+            [&_.katex]:text-white [&_.katex-display]:my-6 [&_.katex-display]:overflow-x-auto [&_.katex-display]:py-3 [&_.katex-display]:px-4 [&_.katex-display]:bg-white/[0.03] [&_.katex-display]:rounded-xl [&_.katex-display]:border [&_.katex-display]:border-white/10
+            prose-p:leading-7 prose-p:mb-4 prose-p:text-gray-200
+            prose-headings:text-gray-100 prose-headings:font-bold prose-headings:tracking-tight
+            prose-h1:text-2xl prose-h1:mt-2 prose-h1:mb-6
+            prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-4 prose-h2:border-b prose-h2:border-white/10 prose-h2:pb-2
+            prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3
+            prose-h4:text-base prose-h4:mt-5 prose-h4:mb-2 prose-h4:text-gray-300
+            prose-ul:my-4 prose-ul:pl-6 prose-ol:my-4 prose-ol:pl-6
+            prose-li:my-2 prose-li:leading-7 prose-li:text-gray-200
+            prose-code:text-emerald-300 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[0.88em]
+            prose-pre:border prose-pre:border-white/10 prose-pre:bg-black/50 prose-pre:mb-6 prose-pre:mt-4 prose-pre:rounded-xl
+            prose-blockquote:my-6 prose-blockquote:border-l-4 prose-blockquote:border-emerald-500/50 prose-blockquote:bg-white/5 prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:rounded-r-lg prose-blockquote:not-italic
+            prose-hr:border-white/10 prose-hr:my-8
+            prose-a:text-emerald-300 prose-a:underline prose-a:underline-offset-4 prose-a:decoration-emerald-500/50
+            prose-strong:text-white prose-strong:font-semibold
+            prose-table:border-collapse prose-th:border prose-th:border-white/10 prose-th:bg-white/5 prose-th:px-4 prose-th:py-2 prose-td:border prose-td:border-white/10 prose-td:px-4 prose-td:py-2
+          `}>
              <ReactMarkdown 
                 remarkPlugins={[remarkMath]} 
                 rehypePlugins={[rehypeKatex]}
@@ -346,29 +427,32 @@ const Message = ({ role, content, media, onOpenMedia }) => {
 
           {/* Inline Media Player */}
           {!isUser && media && (
-              <div className="mt-6 w-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 shadow-2xl">
-                 <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+              <div className="mt-6 w-full rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0a0a0a] shadow-2xl">
+                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.06] bg-white/[0.02]">
                     <div className="flex items-center gap-2">
-                         {media.type === 'video' ? <PlayCircle size={16} className="text-white"/> : <ImageIcon size={16} className="text-white"/>}
-                         <span className="text-xs font-bold text-gray-300 uppercase tracking-wider">{media.type === 'video' ? 'Manim Animation' : 'Figure'}</span>
+                         <div className={`w-6 h-6 rounded-md flex items-center justify-center ${media.type === 'video' ? 'bg-purple-500/15 border border-purple-500/30' : 'bg-blue-500/15 border border-blue-500/30'}`}>
+                           {media.type === 'video' ? <PlayCircle size={12} className="text-purple-400"/> : <ImageIcon size={12} className="text-blue-400"/>}
+                         </div>
+                         <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{media.type === 'video' ? 'Animación Manim' : 'Gráfica'}</span>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5">
                          <button onClick={() => {
                              const link = document.createElement('a');
                              link.href = media.type === 'video' ? `data:video/mp4;base64,${media.data}` : `data:image/png;base64,${media.data}`;
                              link.download = media.type === 'video' ? 'jhan-ai.mp4' : 'jhan-ai.png';
                              link.click();
-                         }} className="p-1.5 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"><Download size={14}/></button>
-                         {/* We can still keep the expand button to open full visualizer if needed, or remove it.*/}
-                         <button onClick={() => onOpenMedia(media)} className="p-1.5 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"><Maximize2 size={14}/></button>
+                         }} className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider rounded border border-white/10 text-gray-500 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all active:scale-95">
+                           <Download size={10}/> Descargar
+                         </button>
+                         <button onClick={() => onOpenMedia(media)} className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider rounded border border-white/10 text-gray-500 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all active:scale-95">
+                           <Maximize2 size={10}/> Ampliar
+                         </button>
                     </div>
                  </div>
                  
                  <div className="relative w-full flex items-center justify-center p-4 bg-[url('/grid.svg')] bg-center">
                      {media.type === 'video' ? (
-                         <video controls autoPlay loop className="w-full max-h-[500px] object-contain rounded-lg shadow-lg">
-                             <source src={`data:video/mp4;base64,${media.data}`} type="video/mp4"/>
-                         </video>
+                         <VideoPlayer b64data={media.data} className="w-full max-h-[500px] object-contain rounded-lg shadow-lg"/>
                      ) : (
                          <img src={`data:image/png;base64,${media.data}`} className="w-full max-h-[500px] object-contain rounded-lg shadow-lg" alt="Chart" />
                      )}
@@ -521,7 +605,6 @@ function App() {
             else if (data.image_base64) newMedia = { type: 'image', data: data.image_base64, code: data.code_executed }
           
             setMessages(p => [...p, { role: 'assistant', content: data.response, media: newMedia }])
-            if (newMedia) setVisualData(newMedia)
         } catch (err) {
             setMessages(p => [...p, { role: 'assistant', content: `**System Error:** ${err.message}` }])
             setSystemStatus(prev => ({ ...prev, apiOnline: false }))
@@ -809,16 +892,7 @@ function App() {
                             <div className={`overflow-hidden transition-all duration-300 ease-out ${showInlineMathEditor ? 'max-h-0 opacity-0 -translate-y-2 pointer-events-none' : 'max-h-40 opacity-100 translate-y-0'}`}>
                                 <form onSubmit={(e) => { e.preventDefault(); if(!loading) handleSubmit(e); }} 
                                     className="relative flex items-center rounded-[2rem] p-2 border border-white/[0.1] transition-all duration-300 bg-transparent active:scale-[0.995] focus-within:border-white/30 z-20">
-                                
-                                {/* Toggle Toolbox Button */}
-                                <button 
-                                    type="button"
-                                    onClick={() => setShowToolbox(!showToolbox)}
-                                    className={`pl-4 pr-2 text-gray-500 hover:text-white transition-colors ${showToolbox ? 'text-white' : ''}`}
-                                >
-                                    <Calculator size={20} className="hover:rotate-12 transition-transform"/>
-                                </button>
-                                
+
                                 {/* Input Editor */}
                                 <div className="w-full px-4 py-3 cursor-text rounded-xl hover:bg-white/[0.02] transition-colors" onClick={() => {
                                     inputRef.current?.focus();
