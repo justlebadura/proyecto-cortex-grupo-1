@@ -13,6 +13,7 @@ import Latex from 'react-latex-next'
 import { addStyles, EditableMathField } from 'react-mathquill'
 
 import LiveLatexInput from './components/LiveLatexInput'
+import PresentationPage from './components/PresentationPage'
 
 import { 
   Send, Terminal, Image as ImageIcon, Loader2, PlayCircle, BookOpen, 
@@ -393,6 +394,8 @@ function App() {
   const [activeMathTab, setActiveMathTab] = useState('common')
   const [showToolbox, setShowToolbox] = useState(false)
   const [toolboxSearch, setToolboxSearch] = useState('')
+    const [activeView, setActiveView] = useState('chat')
+        const [isPresentationMode, setIsPresentationMode] = useState(false)
     const [visualizationMode, setVisualizationMode] = useState(() => localStorage.getItem('jhan-visualization-mode') || 'manim')
     const [showInlineMathEditor, setShowInlineMathEditor] = useState(false)
     const [inlineMathLatex, setInlineMathLatex] = useState('')
@@ -438,6 +441,12 @@ function App() {
             setTimeout(() => mathFieldRef.current?.focus(), 0)
         }
     }, [showInlineMathEditor])
+
+    useEffect(() => {
+        if (activeView !== 'presentacion') {
+            setIsPresentationMode(false)
+        }
+    }, [activeView])
 
     useEffect(() => {
         let isMounted = true
@@ -524,6 +533,8 @@ function App() {
      const newId = sessions.length + 1;
      setSessions([...sessions, {id: newId, title: `Sesión ${newId}`, date: new Date()}]);
      setCurrentSessionId(newId);
+      setActiveView('chat');
+      setIsPresentationMode(false);
      setMessages([{ role: 'assistant', content: '## Nueva Sesión Iniciada\n\nContexto limpio. Listo para nuevos cálculos.' }]);
      setVisualData(null);
   }
@@ -585,7 +596,7 @@ function App() {
          </div>
 
         {/* SIDEBAR - DARK GLASS */}
-        <nav className={`relative z-20 flex flex-col liquid-glass-strong border-r border-white/5 transition-all duration-300 ease-spring h-full shrink-0 ${sidebarOpen ? 'w-72' : 'w-[70px]'}`}>
+        <nav className={`relative z-20 flex flex-col liquid-glass-strong border-r border-white/5 transition-all duration-500 ease-in-out h-full shrink-0 ${activeView === 'presentacion' && isPresentationMode ? 'w-0 opacity-0 -translate-x-8 pointer-events-none' : (sidebarOpen ? 'w-72 opacity-100 translate-x-0' : 'w-[70px] opacity-100 translate-x-0')}`}>
              
              {/* Logo Area */}
              <div className="h-20 flex items-center justify-center border-b border-white/5 shrink-0 bg-black/20">
@@ -623,8 +634,17 @@ function App() {
                  ))}
              </div>
 
-             {/* Footer Toggle */}
+             {/* Footer Actions */}
              <div className="p-4 border-t border-white/5 shrink-0">
+                 <Tooltip text="Presentacion del sistema">
+                    <button
+                        onClick={() => setActiveView('presentacion')}
+                        className={`w-full mb-2 p-3 rounded-xl flex items-center gap-4 ${sidebarOpen ? 'justify-start' : 'justify-center'} transition-all border ${activeView === 'presentacion' ? 'bg-white/15 border-white/20 text-white' : 'bg-white/[0.03] border-white/10 text-gray-300 hover:bg-white/10 hover:text-white'}`}
+                    >
+                        <Monitor size={20} />
+                        {sidebarOpen && <span className="text-sm font-medium">Presentacion</span>}
+                    </button>
+                 </Tooltip>
                  <button onClick={() => setSidebarOpen(!sidebarOpen)} className="w-full p-2 flex items-center justify-center rounded-lg hover:bg-white/5 text-gray-500 hover:text-white transition-colors">
                      {sidebarOpen ? <ChevronLeft size={20}/> : <ChevronRight size={20}/>}
                  </button>
@@ -635,6 +655,7 @@ function App() {
         <main className="flex-1 flex flex-col relative z-10 transition-all duration-300 h-full overflow-hidden backdrop-blur-[2px]">
             
             {/* Top Bar - DARK */}
+            {!(activeView === 'presentacion' && isPresentationMode) && (
             <header className="h-16 px-8 flex items-center justify-between border-b border-white/[0.05] liquid-glass sticky top-0 shrink-0">
                 <div className="flex items-center gap-4">
                     <span className={`text-xs font-bold uppercase tracking-widest flex items-center gap-2 ${systemStatus.apiOnline ? 'text-emerald-300' : 'text-red-300'}`}>
@@ -645,6 +666,9 @@ function App() {
                     <span className="text-xs text-gray-600 font-mono">Session ID: {currentSessionId}</span>
                 </div>
                 <div className="flex gap-1 items-center">
+                    {activeView === 'presentacion' && (
+                        <span className="text-[11px] uppercase tracking-[0.25em] text-gray-400 mr-2">Presentacion</span>
+                    )}
                     <Tooltip text="Settings"><button onClick={() => setIsSettingsOpen(true)} className="p-2 hover:bg-white/5 rounded-lg hover:text-white text-gray-500 transition-colors"><Settings size={18}/></button></Tooltip>
                     <div className="w-px h-4 bg-white/10 mx-2"></div>
                     <div className="flex items-center gap-2">
@@ -652,10 +676,16 @@ function App() {
                     </div>
                 </div>
             </header>
+            )}
 
             {/* Split View Content */}
             <div className="flex-1 flex flex-row overflow-hidden relative">
-                
+                {activeView === 'presentacion' ? (
+                    <div className="flex-1 min-w-0 h-full">
+                        <PresentationPage onPresentingChange={setIsPresentationMode} />
+                    </div>
+                ) : (
+                <>
                 {/* Chat Column */}
                 <div className="flex-1 flex flex-col min-w-0 h-full">
                     <div className="flex-1 overflow-y-auto p-4 md:p-8 lg:px-20 animate-fade-in custom-scrollbar">
@@ -879,6 +909,8 @@ function App() {
                         media={visualData} 
                         onClose={() => setVisualData(null)} 
                     />
+                )}
+                </>
                 )}
             </div>
         </main>
