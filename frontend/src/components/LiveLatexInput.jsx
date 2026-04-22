@@ -23,7 +23,8 @@ const LiveLatexInput = forwardRef(({
   className = "",
   inputClassName = "",
   autoFocus = false,
-  onKeyDown
+  onKeyDown,
+  readOnly = false
 }, ref) => {
   const [isEditing, setIsEditing] = useState(false);
   const internalInputRef = useRef(null);
@@ -76,6 +77,7 @@ const LiveLatexInput = forwardRef(({
           onBlur={handleBlur}
           onKeyDown={onKeyDown}
           placeholder={placeholder}
+          readOnly={readOnly}
           className={`w-full bg-transparent outline-none border-none focus:ring-0 ${inputClassName}`}
           autoFocus={true}
         />

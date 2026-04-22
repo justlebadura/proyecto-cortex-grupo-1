@@ -92,4 +92,24 @@
   .katex {
     font-size: 1.1em !important;
   }
+
+  .mathquill-editor .mq-editable-field {
+    border: none;
+    color: #d1fae5;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    min-height: 2.25rem;
+    background: transparent;
+    box-shadow: none;
+    margin: 0;
+  }
+
+  .mathquill-editor .mq-root-block,
+  .mathquill-editor .mq-root-block * {
+    color: #d1fae5;
+  }
+
+  .mathquill-editor .mq-cursor {
+    border-left: 1px solid #86efac;
+  }
 }

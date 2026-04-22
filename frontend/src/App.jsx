@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------------
-// CORTEX - MATH AI: Dark Glass v2.0 (Monochrome Edition)
+// JHAN AI - MATH ASSISTANT: Dark Glass v2.0 (Monochrome Edition)
 // -----------------------------------------------------------------------------
 
 import React, { useState, useRef, useEffect, useMemo } from 'react'
@@ -8,7 +8,9 @@ import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
+import katex from 'katex'
 import Latex from 'react-latex-next'
+import { addStyles, EditableMathField } from 'react-mathquill'
 
 import LiveLatexInput from './components/LiveLatexInput'
 
@@ -20,6 +22,8 @@ import {
 } from 'lucide-react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
+
+addStyles()
 
 // --- HERRAMIENTAS MATEMÁTICAS ---
 const MATH_TABS = [
@@ -132,8 +136,15 @@ const Tooltip = ({ text, children }) => (
   </div>
 );
 
+const StatusPill = ({ ok, label }) => (
+    <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${ok ? 'border-emerald-400/30 text-emerald-300 bg-emerald-400/10' : 'border-red-400/30 text-red-300 bg-red-400/10'}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${ok ? 'bg-emerald-300' : 'bg-red-300'}`}></span>
+        {label}
+    </span>
+)
+
 // --- MODAL DE AJUSTES ---
-const SettingsModal = ({ isOpen, onClose }) => {
+const SettingsModal = ({ isOpen, onClose, apiEndpoint, visualizationMode, onVisualizationModeChange }) => {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -147,10 +158,13 @@ const SettingsModal = ({ isOpen, onClose }) => {
         <div className="space-y-4">
            <div>
               <label className="block text-xs font-mono text-gray-400 mb-1 uppercase">Motor de Renderizado</label>
-              <select className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-sm text-gray-200 outline-none focus:border-white/30">
-                  <option>Manim (Video)</option>
-                  <option>Matplotlib (Estático)</option>
-                  <option>ASCII Plot (Terminal)</option>
+              <select
+                  value={visualizationMode}
+                  onChange={(e) => onVisualizationModeChange(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-sm text-gray-200 outline-none focus:border-white/30"
+              >
+                  <option value="manim">Manim (Video)</option>
+                  <option value="matplotlib">Matplotlib (Estático)</option>
               </select>
            </div>
            
@@ -164,7 +178,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
            <div>
               <label className="block text-xs font-mono text-gray-400 mb-1 uppercase">Api Endpoint</label>
-              <input type="text" value="http://localhost:8000" disabled className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-sm text-gray-500"/>
+              <input type="text" value={apiEndpoint} disabled className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-sm text-gray-500"/>
            </div>
 
            <div className="pt-4 border-t border-white/5 flex justify-end">
@@ -185,7 +199,7 @@ const Visualizer = ({ media, onClose }) => {
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = isVideo ? `data:video/mp4;base64,${data}` : `data:image/png;base64,${data}`;
-    link.download = isVideo ? 'cortex-animation.mp4' : 'cortex-plot.png';
+    link.download = isVideo ? 'jhan-ai-animation.mp4' : 'jhan-ai-plot.png';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -303,12 +317,12 @@ const Message = ({ role, content, media, onOpenMedia }) => {
           {/* Avatar Name for AI */}
           {!isUser && (
              <div className="flex items-center gap-2 mb-4 text-[10px] font-bold tracking-[0.2em] text-gray-500 uppercase border-b border-white/5 pb-2">
-                 <Bot size={14} className="text-white"/> Cortex AI <span className="text-gray-700 mx-1">|</span> v2.0
+                 <Bot size={14} className="text-white"/> Jhan AI <span className="text-gray-700 mx-1">|</span> v2.0
              </div>
           )}
 
           {/* Markdown Content */}
-          <div className={`prose prose-sm prose-invert max-w-none prose-p:leading-7 prose-headings:text-gray-100 prose-a:text-white prose-a:underline prose-a:underline-offset-4 prose-strong:text-white`}>
+          <div className={`prose prose-sm prose-invert max-w-none prose-p:leading-7 prose-headings:text-gray-100 prose-headings:font-bold prose-headings:tracking-tight prose-h1:mb-6 prose-h2:mt-6 prose-h2:mb-5 prose-h2:border-b prose-h2:border-white/10 prose-h2:pb-1 prose-h3:mt-5 prose-h3:mb-5 prose-h4:mt-5 prose-h4:mb-5 prose-code:text-emerald-200 prose-pre:border prose-pre:border-white/10 prose-pre:bg-black/50 prose-pre:mb-5 prose-pre:mt-4 prose-blockquote:mb-5 prose-blockquote:border-l-4 prose-blockquote:border-emerald-500/50 prose-blockquote:bg-white/5 prose-blockquote:py-3 prose-blockquote:px-4 prose-a:text-white prose-a:underline prose-a:underline-offset-4 prose-strong:text-white`}>
              <ReactMarkdown 
                 remarkPlugins={[remarkMath]} 
                 rehypePlugins={[rehypeKatex]}
@@ -341,7 +355,7 @@ const Message = ({ role, content, media, onOpenMedia }) => {
                          <button onClick={() => {
                              const link = document.createElement('a');
                              link.href = media.type === 'video' ? `data:video/mp4;base64,${media.data}` : `data:image/png;base64,${media.data}`;
-                             link.download = media.type === 'video' ? 'cortex.mp4' : 'cortex.png';
+                             link.download = media.type === 'video' ? 'jhan-ai.mp4' : 'jhan-ai.png';
                              link.click();
                          }} className="p-1.5 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"><Download size={14}/></button>
                          {/* We can still keep the expand button to open full visualizer if needed, or remove it.*/}
@@ -367,9 +381,10 @@ const Message = ({ role, content, media, onOpenMedia }) => {
 
 // --- MAIN APP ---
 function App() {
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
   const [sessions, setSessions] = useState([{id: 1, title: 'Sesión Principal', date: new Date()}])
   const [currentSessionId, setCurrentSessionId] = useState(1)
-  const [messages, setMessages] = useState([{ role: 'assistant', content: '## Sistema Iniciado\n\nBienvenido a **CORTEX**. Soy tu motor de razonamiento matemático avanzado.\n\nEscribe cualquier expresión matemática en LaTeX y verás una vista previa instantánea.' }])
+    const [messages, setMessages] = useState([{ role: 'assistant', content: '## Sistema Iniciado\n\nBienvenido a **Jhan AI**. Soy tu asistente de razonamiento matemático avanzado.\n\nEscribe cualquier expresión matemática en LaTeX y verás una vista previa instantánea.' }])
   const [input, setInput] = useState('')
   const [visualData, setVisualData] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -378,8 +393,28 @@ function App() {
   const [activeMathTab, setActiveMathTab] = useState('common')
   const [showToolbox, setShowToolbox] = useState(false)
   const [toolboxSearch, setToolboxSearch] = useState('')
+    const [visualizationMode, setVisualizationMode] = useState(() => localStorage.getItem('jhan-visualization-mode') || 'manim')
+    const [showInlineMathEditor, setShowInlineMathEditor] = useState(false)
+    const [inlineMathLatex, setInlineMathLatex] = useState('')
+        const [pendingMathBlocks, setPendingMathBlocks] = useState([])
+    const latexRuntimeReady = useMemo(() => {
+        try {
+            katex.renderToString('x^2 + y^2')
+            return true
+        } catch {
+            return false
+        }
+    }, [])
+    const [systemStatus, setSystemStatus] = useState({
+        apiOnline: false,
+        llmReady: false,
+        manimReady: false,
+        latexReady: latexRuntimeReady,
+        ultracontextReady: false,
+    })
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
+    const mathFieldRef = useRef(null)
 
   // Filtrado de herramientas
   const filteredTools = useMemo(() => {
@@ -393,25 +428,97 @@ function App() {
 
   useEffect(() => scrollRef.current?.scrollIntoView({ behavior: 'smooth' }), [messages])
 
-  const handleSubmit = async (e) => {
-    e.preventDefault(); if (!input.trim() || loading) return;
-    const userText = input; setInput(''); setLoading(true);
-    setMessages(p => [...p, { role: 'user', content: userText }])
+    useEffect(() => {
+        localStorage.setItem('jhan-visualization-mode', visualizationMode)
+    }, [visualizationMode])
 
-    try {
-      const { data } = await axios.post('http://localhost:8000/chat', { message: userText, context_id: `cortex-session-${currentSessionId}` })
-      
-      let newMedia = null
-      if (data.video_base64) newMedia = { type: 'video', data: data.video_base64, code: data.code_executed }
-      else if (data.image_base64) newMedia = { type: 'image', data: data.image_base64, code: data.code_executed }
-      
-      setMessages(p => [...p, { role: 'assistant', content: data.response, media: newMedia }])
-      if (newMedia) setVisualData(newMedia)
-    } catch (err) {
-      setMessages(p => [...p, { role: 'assistant', content: `**System Error:** ${err.message}` }])
+    useEffect(() => {
+        if (showInlineMathEditor) {
+            setShowToolbox(true)
+            setTimeout(() => mathFieldRef.current?.focus(), 0)
+        }
+    }, [showInlineMathEditor])
+
+    useEffect(() => {
+        let isMounted = true
+
+        const checkSystem = async () => {
+            try {
+                const { data } = await axios.get(`${API_BASE_URL}/health`, { timeout: 4000 })
+                if (!isMounted) return
+                setSystemStatus({
+                    apiOnline: Boolean(data?.ok),
+                    llmReady: Boolean(data?.llm_ready),
+                    manimReady: Boolean(data?.manim_installed),
+                    latexReady: latexRuntimeReady,
+                    ultracontextReady: Boolean(data?.ultracontext_ready),
+                })
+            } catch {
+                if (!isMounted) return
+                setSystemStatus(prev => ({
+                    ...prev,
+                    apiOnline: false,
+                    llmReady: false,
+                    manimReady: false,
+                    latexReady: latexRuntimeReady,
+                    ultracontextReady: false,
+                }))
+            }
+        }
+
+        checkSystem()
+        const intervalId = setInterval(checkSystem, 10000)
+
+        return () => {
+            isMounted = false
+            clearInterval(intervalId)
+        }
+    }, [API_BASE_URL, latexRuntimeReady])
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        if (loading) return
+
+        const queuedMath = [...pendingMathBlocks]
+        if (showInlineMathEditor && inlineMathLatex.trim()) {
+            queuedMath.push({ id: Date.now(), latex: inlineMathLatex.trim() })
+        }
+
+        const plainText = input.trim()
+        if (!plainText && queuedMath.length === 0) return
+
+        const userText = [
+            plainText,
+            ...queuedMath.map(block => `$${block.latex}$`),
+        ].filter(Boolean).join('\n')
+
+        setInput('')
+        setLoading(true)
+        setShowToolbox(false)
+        setShowInlineMathEditor(false)
+        setInlineMathLatex('')
+        setPendingMathBlocks([])
+        setMessages(p => [...p, { role: 'user', content: userText }])
+
+        try {
+            const { data } = await axios.post(`${API_BASE_URL}/chat`, {
+                message: userText,
+                context_id: `jhan-session-${currentSessionId}`,
+                visualization_mode: visualizationMode,
+            })
+          
+            let newMedia = null
+            if (data.video_base64) newMedia = { type: 'video', data: data.video_base64, code: data.code_executed }
+            else if (data.image_base64) newMedia = { type: 'image', data: data.image_base64, code: data.code_executed }
+          
+            setMessages(p => [...p, { role: 'assistant', content: data.response, media: newMedia }])
+            if (newMedia) setVisualData(newMedia)
+        } catch (err) {
+            setMessages(p => [...p, { role: 'assistant', content: `**System Error:** ${err.message}` }])
+            setSystemStatus(prev => ({ ...prev, apiOnline: false }))
+        }
+        setLoading(false)
     }
-    setLoading(false)
-  }
 
   const createNewSession = () => {
      const newId = sessions.length + 1;
@@ -421,41 +528,56 @@ function App() {
      setVisualData(null);
   }
 
-  const insertLatex = (latex) => {
-      // Force focus to ensure input mode is active
-      inputRef.current?.focus();
+    const insertLatex = (latex) => {
+        if (mathFieldRef.current) {
+            mathFieldRef.current.write(latex)
+            mathFieldRef.current.focus()
+            return
+        }
 
-      setTimeout(() => {
-         const inputEl = inputRef.current?.inputElement;
-         if (inputEl) {
-             const start = inputEl.selectionStart || 0;
-             const end = inputEl.selectionEnd || 0;
-             const text = input;
-             
-             // Wrap inserted standard symbols in $ for auto-rendering
-             // but user sees code while editing.
-             const latexToInsert = `$${latex}$`; 
-             const newText = text.substring(0, start) + latexToInsert + text.substring(end);
-             setInput(newText);
-             
-             // Move cursor after insertion
-             setTimeout(() => {
-                 inputEl.focus();
-                 const newCursorPos = start + latexToInsert.length;
-                 inputEl.setSelectionRange(newCursorPos, newCursorPos);
-             }, 10);
-         } else {
-             setInput(prev => prev + `$${latex}$`);
-         }
-      }, 50);
-  }
+        setInlineMathLatex(prev => prev + latex)
+    }
+
+    const handleInputChange = (nextValue) => {
+        setInput(nextValue)
+        const slashMathRegex = /(^|\s)\/math\s*$/i
+        if (slashMathRegex.test(nextValue)) {
+            const cleaned = nextValue.replace(slashMathRegex, '')
+            setInput(cleaned)
+            setShowInlineMathEditor(true)
+            setInlineMathLatex('')
+        }
+    }
+
+    const finishInlineMath = () => {
+        const cleanMath = inlineMathLatex.trim()
+        if (cleanMath) {
+            setPendingMathBlocks(prev => ([
+                ...prev,
+                { id: Date.now(), latex: cleanMath },
+            ]))
+        }
+        setShowInlineMathEditor(false)
+        setInlineMathLatex('')
+        inputRef.current?.focus()
+    }
+
+    const removeMathBlock = (id) => {
+        setPendingMathBlocks(prev => prev.filter(block => block.id !== id))
+    }
 
   // --- UI RENDER ---
 
   return (
     <div className="w-screen h-screen bg-[#000] text-gray-200 overflow-hidden font-sans selection:bg-white/20 selection:text-white flex flex-row relative z-0">
          
-         <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)}/>
+            <SettingsModal
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+                apiEndpoint={API_BASE_URL}
+                visualizationMode={visualizationMode}
+                onVisualizationModeChange={setVisualizationMode}
+            />
 
          {/* DARK BACKGROUND LAYER */}
          <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-black">
@@ -469,7 +591,7 @@ function App() {
              <div className="h-20 flex items-center justify-center border-b border-white/5 shrink-0 bg-black/20">
                  <div className={`flex items-center gap-3 transition-all duration-300 ${sidebarOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 w-0'}`}>
                      <div className="p-2 rounded-xl bg-white/10 shadow-lg shadow-white/5"><Atom size={24} className="text-white"/></div>
-                     <span className="font-bold text-xl tracking-tighter text-white">CORTEX</span>
+                     <span className="font-bold text-xl tracking-tighter text-white">JHAN AI</span>
                  </div>
                  {!sidebarOpen && <div className="p-2 animate-pulse"><Atom size={24} className="text-white"/></div>}
              </div>
@@ -515,9 +637,9 @@ function App() {
             {/* Top Bar - DARK */}
             <header className="h-16 px-8 flex items-center justify-between border-b border-white/[0.05] liquid-glass sticky top-0 shrink-0">
                 <div className="flex items-center gap-4">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"></span>
-                        Connected
+                    <span className={`text-xs font-bold uppercase tracking-widest flex items-center gap-2 ${systemStatus.apiOnline ? 'text-emerald-300' : 'text-red-300'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${systemStatus.apiOnline ? 'bg-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.9)]' : 'bg-red-300 shadow-[0_0_10px_rgba(248,113,113,0.8)]'}`}></span>
+                        {systemStatus.apiOnline ? 'API Online' : 'API Offline'}
                     </span>
                     <div className="h-4 w-px bg-white/10"></div>
                     <span className="text-xs text-gray-600 font-mono">Session ID: {currentSessionId}</span>
@@ -635,18 +757,37 @@ function App() {
                                 </div>
                             </div>
 
+                            {pendingMathBlocks.length > 0 && (
+                                <div className="mb-3 flex flex-wrap gap-2">
+                                    {pendingMathBlocks.map(block => (
+                                        <div key={block.id} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-400/20 text-emerald-100">
+                                            <Latex>{`$${block.latex}$`}</Latex>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeMathBlock(block.id)}
+                                                className="text-emerald-300/80 hover:text-white"
+                                                aria-label="Eliminar bloque matemático"
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
                             {/* The input container */}
-                            <form onSubmit={(e) => { e.preventDefault(); if(!loading) handleSubmit(e); }} 
-                                  className="relative flex items-center rounded-[2rem] p-2 border border-white/[0.1] shadow-[0_0_50px_rgba(0,0,0,0.5)] transition-all duration-300 backdrop-filter backdrop-blur-[20px] bg-white/[0.02] hover:bg-white/[0.04] active:scale-[0.995] focus-within:border-white/30 focus-within:shadow-white/10 z-20">
+                            <div className={`overflow-hidden transition-all duration-300 ease-out ${showInlineMathEditor ? 'max-h-0 opacity-0 -translate-y-2 pointer-events-none' : 'max-h-40 opacity-100 translate-y-0'}`}>
+                                <form onSubmit={(e) => { e.preventDefault(); if(!loading) handleSubmit(e); }} 
+                                    className="relative flex items-center rounded-[2rem] p-2 border border-white/[0.1] transition-all duration-300 bg-transparent active:scale-[0.995] focus-within:border-white/30 z-20">
                                 
                                 {/* Toggle Toolbox Button */}
-                                <Tooltip text="Open Math Tools"><button 
+                                <button 
                                     type="button"
                                     onClick={() => setShowToolbox(!showToolbox)}
                                     className={`pl-4 pr-2 text-gray-500 hover:text-white transition-colors ${showToolbox ? 'text-white' : ''}`}
                                 >
                                     <Calculator size={20} className="hover:rotate-12 transition-transform"/>
-                                </button></Tooltip>
+                                </button>
                                 
                                 {/* Input Editor */}
                                 <div className="w-full px-4 py-3 cursor-text rounded-xl hover:bg-white/[0.02] transition-colors" onClick={() => {
@@ -655,8 +796,8 @@ function App() {
                                     <LiveLatexInput
                                         ref={inputRef}
                                         value={input}
-                                        onChange={setInput}
-                                        placeholder="Escribe texto y matemáticas..."
+                                        onChange={handleInputChange}
+                                        placeholder="Escribe texto... usa /math para abrir el editor matemático"
                                         inputClassName="text-lg text-white font-sans"
                                         autoFocus={true}
                                     />
@@ -672,8 +813,61 @@ function App() {
                                     </button>
                                 </div>
                             </form>
+                            </div>
+
+                            {showInlineMathEditor && (
+                                <div className="mt-2 p-3 rounded-xl border border-emerald-400/20 bg-emerald-500/5">
+                                    <div className="mathquill-editor rounded-lg bg-black/30 border border-emerald-400/20 px-4 py-3 text-emerald-100">
+                                        <EditableMathField
+                                            latex={inlineMathLatex}
+                                            mathquillDidMount={(mathField) => {
+                                                mathFieldRef.current = mathField
+                                                mathField.focus()
+                                            }}
+                                            onChange={(mathField) => setInlineMathLatex(mathField.latex())}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Escape') {
+                                                    e.preventDefault()
+                                                    setShowInlineMathEditor(false)
+                                                    setInlineMathLatex('')
+                                                    inputRef.current?.focus()
+                                                }
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault()
+                                                    finishInlineMath()
+                                                }
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div className="mt-2 flex items-center justify-end gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setShowInlineMathEditor(false)
+                                                setInlineMathLatex('')
+                                                inputRef.current?.focus()
+                                            }}
+                                            className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border border-white/15 text-gray-300 hover:bg-white/10"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={finishInlineMath}
+                                            className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border border-emerald-300/30 text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20"
+                                        >
+                                            Insertar
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                             <div className="text-center mt-3 text-[10px] text-gray-600 font-bold uppercase tracking-[0.3em] opacity-40 flex justify-center gap-4">
-                                <span className="flex items-center gap-1"><Sigma size={10}/> LaTeX Supported</span> • <span className="flex items-center gap-1"><PlayCircle size={10}/> Manim Engine Ready</span>
+                                <StatusPill ok={systemStatus.apiOnline} label="API" />
+                                <StatusPill ok={systemStatus.llmReady} label="Modelo HF" />
+                                <StatusPill ok={systemStatus.latexReady} label="LaTeX" />
+                                <StatusPill ok={systemStatus.manimReady} label="Manim" />
+                                <StatusPill ok={systemStatus.ultracontextReady} label="Memoria" />
                             </div>
                         </div>
                     </div>

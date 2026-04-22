@@ -12,15 +12,15 @@ cleanup() {
 # Capturar Ctrl+C (SIGINT) para ejecutar cleanup
 trap cleanup SIGINT
 
-echo "Iniciando Robert: Proyecto CORTEX </>"
+echo "Iniciando Jhan AI: Proyecto CORTEX </>"
 echo "---------------------------------------"
 
 # 1. Iniciar Backend (FastAPI)
 echo "Arrancando Backend (Python/FastAPI)</>"
 cd backend
-# Ejecutamos python en segundo plano
+# Ejecutamos python en segundo plano usando el venv
 # Logs guardados en backend.log para depuración
-python main.py > backend.log 2>&1 &
+../.venv/bin/python main.py > backend.log 2>&1 &
 BACKEND_PID=$!
 cd ..
 
