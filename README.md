@@ -156,8 +156,8 @@ A continuación, se presentan dos escenarios que demuestran la implementación d
 > **JHAN AI:** (Aplicando Filtro de Atención de Fase 2.2): Comprendo. Seré más sintético. Identifique el valor de $x$ que hace que el argumento sea cero. Ese es su punto crítico de partida.
 <img width="998" height="523" alt="image" src="https://github.com/user-attachments/assets/0bbf8a07-b286-4671-a9f5-b6d4044b51f0" />
 
-####5. Lógica y Ética: Protocolo Anti-Sesgos
-###5.1 Identificación del "Bug Humano" (Sesgo Cognitivo)
+#### 5. Lógica y Ética: Protocolo Anti-Sesgos
+### 5.1 Identificación del "Bug Humano" (Sesgo Cognitivo)
 
 Para el agente Cortex (Profesor de Cálculo), se ha identificado el siguiente fallo lógico de origen humano:Sesgo de Confirmación Pedagógica: Este "bug" consiste en la tendencia del sistema a validar únicamente los métodos de resolución que coinciden con su base de datos predefinida (LTM Semántica), ignorando o penalizando enfoques alternativos pero matemáticamente válidos propuestos por el estudiante.  Impacto en el Bot: El agente podría marcar como errónea una respuesta correcta simplemente porque el procedimiento no sigue el algoritmo de "Libro de Texto", limitando la creatividad intelectual del alumno.  
 
