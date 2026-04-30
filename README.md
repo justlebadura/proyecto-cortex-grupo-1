@@ -155,3 +155,30 @@ A continuación, se presentan dos escenarios que demuestran la implementación d
 >
 > **JHAN AI:** (Aplicando Filtro de Atención de Fase 2.2): Comprendo. Seré más sintético. Identifique el valor de $x$ que hace que el argumento sea cero. Ese es su punto crítico de partida.
 <img width="998" height="523" alt="image" src="https://github.com/user-attachments/assets/0bbf8a07-b286-4671-a9f5-b6d4044b51f0" />
+
+####5. Lógica y Ética: Protocolo Anti-Sesgos
+###5.1 Identificación del "Bug Humano" (Sesgo Cognitivo)
+
+Para el agente Cortex (Profesor de Cálculo), se ha identificado el siguiente fallo lógico de origen humano:Sesgo de Confirmación Pedagógica: Este "bug" consiste en la tendencia del sistema a validar únicamente los métodos de resolución que coinciden con su base de datos predefinida (LTM Semántica), ignorando o penalizando enfoques alternativos pero matemáticamente válidos propuestos por el estudiante.  Impacto en el Bot: El agente podría marcar como errónea una respuesta correcta simplemente porque el procedimiento no sigue el algoritmo de "Libro de Texto", limitando la creatividad intelectual del alumno.  
+
+###5.2 Regla de Seguridad en GitHub (Markdown)
+   
+Este bloque de contenido debe ser integrado en el archivo base_conocimiento.md o en un nuevo archivo SAFETY.md dentro de su repositorio
+
+### 🛡️ Regla de Seguridad: Mitigación de Sesgo de Confirmación (ID: ETH-002)
+
+**Estado:** ACTIVO  
+**Nivel de Bloqueo:** ESTRICTO  
+
+#### Directiva de Ejecución Lógica:
+IF (el estudiante propone un método de resolución no convencional)  
+AND (el resultado final coincide con la propiedad matemática verificada por la LTM)  
+THEN (ejecutar análisis de equivalencia lógica antes de emitir un juicio).
+
+#### Protocolo de Bloqueo:
+1. **Validación de Equivalencia:** El sistema no debe rechazar un procedimiento basado en la "forma", sino en la "validez de la operación".
+2. **Apertura Socrática:** Si el método es desconocido, el agente debe solicitar al estudiante la justificación teórica antes de corregir, evitando el cierre prematuro del diálogo.
+3. **Filtro de Autoridad:** Queda prohibida la frase "Ese método es incorrecto porque no es el estándar". Se sustituirá por: "Analicemos la validez de su planteamiento bajo los axiomas correspondientes".
+
+---
+**Responsables de Auditoría:** Castro Jiménez, Argumedo Mejía, Prasca Pedraza.
