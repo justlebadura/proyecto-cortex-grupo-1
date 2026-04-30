@@ -161,7 +161,7 @@ A continuación, se presentan dos escenarios que demuestran la implementación d
 
 Para el agente Cortex (Profesor de Cálculo), se ha identificado el siguiente fallo lógico de origen humano:Sesgo de Confirmación Pedagógica: Este "bug" consiste en la tendencia del sistema a validar únicamente los métodos de resolución que coinciden con su base de datos predefinida (LTM Semántica), ignorando o penalizando enfoques alternativos pero matemáticamente válidos propuestos por el estudiante.  Impacto en el Bot: El agente podría marcar como errónea una respuesta correcta simplemente porque el procedimiento no sigue el algoritmo de "Libro de Texto", limitando la creatividad intelectual del alumno.  
 
-###5.2 Regla de Seguridad en GitHub (Markdown)
+### 5.2 Regla de Seguridad en GitHub (Markdown)
    
 Este bloque de contenido debe ser integrado en el archivo base_conocimiento.md o en un nuevo archivo SAFETY.md dentro de su repositorio
 
