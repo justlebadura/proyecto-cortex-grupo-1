@@ -154,3 +154,4 @@ A continuación, se presentan dos escenarios que demuestran la implementación d
 > **Estudiante:** Es que es demasiado texto y me pierdo.
 >
 > **JHAN AI:** (Aplicando Filtro de Atención de Fase 2.2): Comprendo. Seré más sintético. Identifique el valor de $x$ que hace que el argumento sea cero. Ese es su punto crítico de partida.
+<img width="998" height="523" alt="image" src="https://github.com/user-attachments/assets/0bbf8a07-b286-4671-a9f5-b6d4044b51f0" />
