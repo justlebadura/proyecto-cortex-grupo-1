@@ -14,50 +14,41 @@ try:
 except NameError:
     pass # CoordinateSystem might not be available or named differently
 
-# Visualización de la derivada como límite de la pendiente de la secante
+# Visualización del producto cruz y el área del paralelogramo
 from manim import *
 
-class Solution(Scene):
+class Solution(ThreeDScene):
     def construct(self):
-        # Configuración del plano cartesiano
-        plane = NumberPlane(
-            x_range=[-3, 3, 1],
-            y_range=[-1, 9, 1],
-            x_length=7,
-            y_length=5,
-            axis_config={"include_numbers": True}
+        # Configuración del espacio 3D
+        axes = ThreeDAxes()
+        self.add(axes)
+
+        # Definición de los vectores u y v
+        u = np.array([2, 1, 0])
+        v = np.array([1, 3, 0])
+
+        # Creación de flechas para los vectores
+        vector_u = Arrow3D(start=ORIGIN, end=u, color=BLUE)
+        vector_v = Arrow3D(start=ORIGIN, end=v, color=GREEN)
+
+        # Cálculo del producto cruz
+        cross_product = np.cross(u, v)
+        vector_cross = Arrow3D(start=ORIGIN, end=cross_product, color=RED)
+
+        # Creación del paralelogramo
+        parallelogram = Polygon(
+            ORIGIN, u, u + v, v,
+            color=YELLOW, fill_opacity=0.5
         )
-        self.add(plane)
 
-        # Definición de la función f(x) = x^2
-        f = lambda x: x**2
-        curve = plane.plot(f, x_range=[-2, 2], color=BLUE)
-        self.add(curve)
+        # Agregar objetos a la escena
+        self.add(vector_u, vector_v, vector_cross, parallelogram)
 
-        # Punto fijo en la curva
-        x_a = 1.0
-        dot_a = Dot(plane.c2p(x_a, f(x_a)), color=WHITE)
-        self.add(dot_a)
-
-        # Tracker para el valor de h
-        h_tracker = ValueTracker(1.0)
-
-        # Línea secante dinámica
-        secante = always_redraw(lambda: Line(
-            plane.c2p(x_a, f(x_a)),
-            plane.c2p(x_a + h_tracker.get_value(), f(x_a + h_tracker.get_value())),
-            color=YELLOW
-        ))
-        self.add(secante)
-
-        # Etiqueta para h
-        h_label = always_redraw(lambda: MathTex(
-            f"h = {h_tracker.get_value():.2f}"
-        ).next_to(plane.c2p(x_a + h_tracker.get_value(), f(x_a + h_tracker.get_value())), UP))
-        self.add(h_label)
-
-        # Animación: h tiende a cero
-        self.play(h_tracker.animate.set_value(0.01), run_time=5)
+        # Animación de rotación para observar el paralelogramo y el vector perpendicular
+        self.play(Create(vector_u), Create(vector_v))
+        self.play(Create(parallelogram))
+        self.play(Create(vector_cross))
+        self.move_camera(phi=75 * DEGREES, theta=-45 * DEGREES, run_time=5)
         self.wait(3)
 
 if __name__ == '__main__':

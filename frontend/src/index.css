@@ -76,26 +76,22 @@
   @keyframes slide-forward-enter {
     0% {
       opacity: 0;
-      transform: translateX(26px) scale(0.992);
-      filter: blur(2px);
+      transform: translateX(30px);
     }
     100% {
       opacity: 1;
-      transform: translateX(0) scale(1);
-      filter: blur(0);
+      transform: translateX(0);
     }
   }
 
   @keyframes slide-backward-enter {
     0% {
       opacity: 0;
-      transform: translateX(-26px) scale(0.992);
-      filter: blur(2px);
+      transform: translateX(-30px);
     }
     100% {
       opacity: 1;
-      transform: translateX(0) scale(1);
-      filter: blur(0);
+      transform: translateX(0);
     }
   }
 
@@ -104,11 +100,11 @@
   }
 
   .slide-forward {
-    animation: slide-forward-enter 360ms cubic-bezier(0.22, 1, 0.36, 1);
+    animation: slide-forward-enter 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .slide-backward {
-    animation: slide-backward-enter 360ms cubic-bezier(0.22, 1, 0.36, 1);
+    animation: slide-backward-enter 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
 

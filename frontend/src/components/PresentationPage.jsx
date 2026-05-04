@@ -1,4 +1,277 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react'
+import { 
+  Bot, User, Brain, Activity, Layers, MessageSquare, Zap, 
+  Database, RefreshCw, AlertCircle, CheckCircle2, ShieldCheck,
+  TrendingUp, TrendingDown, Gauge, ChevronLeft, ChevronRight, ChevronDown
+} from 'lucide-react'
+
+// --- COMPONENTES VISUALES PROPIOS (REEMPLAZAN IMÁGENES EXTERNAS) ---
+
+const AgentProfileCard = () => (
+  <div className="w-full aspect-[16/9] rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 to-black/40 overflow-hidden flex flex-col items-center justify-center p-8 relative group hover:border-white/30 transition-all duration-500 shadow-2xl">
+    <div className="absolute top-4 right-6 flex items-center gap-2">
+      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+      <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">Active System</span>
+    </div>
+    
+    <div className="flex items-center gap-8 z-10 group-hover:scale-105 transition-transform duration-500">
+      <div className="w-32 h-32 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center shadow-2xl group-hover:bg-white/10 transition-colors">
+        <Bot size={64} className="text-white" />
+      </div>
+      <div className="space-y-4">
+        <div>
+          <h4 className="text-3xl font-black text-white tracking-tighter">JHAN AI</h4>
+          <p className="text-xs font-mono text-gray-400 uppercase tracking-[0.2em]">Cortex Protocol v2.0</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {['Socrático', 'Riguroso', 'Analítico'].map(tag => (
+            <span key={tag} className="px-3 py-1 rounded-md bg-white/5 border border-white/10 text-[10px] font-bold text-gray-300 uppercase hover:bg-white/10 transition-colors cursor-default">
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+    
+    <div className="mt-8 grid grid-cols-3 gap-12 w-full max-w-lg opacity-60 group-hover:opacity-100 transition-opacity">
+      <div className="text-center">
+        <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Misión</p>
+        <p className="text-xs text-gray-200">Guía Matemática</p>
+      </div>
+      <div className="text-center">
+        <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Especialidad</p>
+        <p className="text-xs text-gray-200">Cálculo Avanzado</p>
+      </div>
+      <div className="text-center">
+        <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Protocolo</p>
+        <p className="text-xs text-gray-200">Enseñanza Lógica</p>
+      </div>
+    </div>
+  </div>
+)
+
+const ProcessRadar = () => {
+  const stats = [
+    { label: 'Razonamiento', value: 8 },
+    { label: 'Lógica', value: 9 },
+    { label: 'Matemáticas', value: 10 },
+    { label: 'Emoción', value: 1 },
+    { label: 'Memoria', value: 7 },
+    { label: 'Atención', value: 8 }
+  ]
+  
+  return (
+    <div className="w-full aspect-[16/9] rounded-2xl border border-white/10 bg-black/40 p-6 flex items-center justify-center gap-8">
+      <div className="flex-1 space-y-3">
+        {stats.map(s => (
+          <div key={s.label} className="space-y-1">
+            <div className="flex justify-between text-[10px] uppercase font-bold tracking-wider">
+              <span className="text-gray-400">{s.label}</span>
+              <span className={s.value > 5 ? 'text-white' : 'text-red-400'}>{s.value}/10</span>
+            </div>
+            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+              <div 
+                className={`h-full rounded-full transition-all duration-1000 ${s.label === 'Emoción' ? 'bg-red-500/50' : 'bg-white/40'}`}
+                style={{ width: `${s.value * 10}%` }} 
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="w-48 h-48 rounded-full border border-white/10 flex items-center justify-center relative">
+        <div className="absolute inset-0 border border-white/5 rounded-full scale-75" />
+        <div className="absolute inset-0 border border-white/5 rounded-full scale-50" />
+        <Brain size={48} className="text-white/20" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Activity size={100} className="text-emerald-500/20 animate-pulse" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const FlowDiagram = () => (
+  <div className="w-full aspect-[21/9] rounded-2xl border border-white/10 bg-black/40 p-4 md:p-8 flex items-center justify-between relative overflow-x-auto custom-scrollbar">
+    <div className="absolute inset-0 opacity-10 pointer-events-none min-w-[600px]">
+      <div className="absolute top-1/2 left-0 w-full h-px bg-white/20 -translate-y-1/2" />
+    </div>
+    
+    <div className="flex items-center justify-between min-w-[600px] w-full">
+      {[
+        { label: 'Input', icon: <MessageSquare size={20}/>, desc: 'Entrada Usuario' },
+        { label: 'Gatekeeper', icon: <ShieldCheck size={20}/>, desc: 'Filtro de Ruido' },
+        { label: 'Cortex', icon: <Brain size={20}/>, desc: 'Motor Lógico' },
+        { label: 'Output', icon: <Zap size={20}/>, desc: 'Respuesta' }
+      ].map((step, i, arr) => (
+        <React.Fragment key={step.label}>
+          <div className="flex flex-col items-center gap-3 z-10 group">
+            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 transition-colors shadow-lg">
+              {step.icon}
+            </div>
+            <div className="text-center">
+              <p className="text-xs font-black text-white">{step.label}</p>
+              <p className="text-[9px] text-gray-500 uppercase tracking-tighter mt-1">{step.desc}</p>
+            </div>
+          </div>
+          {i < arr.length - 1 && (
+            <div className="flex-1 h-px bg-gradient-to-r from-white/10 via-white/40 to-white/10 mx-2 md:mx-4 relative">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-white/60 animate-ping" />
+            </div>
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  </div>
+)
+
+const ContextWindowVisual = () => (
+  <div className="w-full aspect-video rounded-2xl border border-white/10 bg-black/40 p-6 flex flex-col">
+    <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
+      <div className="flex items-center gap-2">
+        <RefreshCw size={14} className="text-emerald-400 animate-spin-slow" />
+        <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">Active Context Window</span>
+      </div>
+      <span className="text-[10px] font-mono text-gray-500">8192 tokens</span>
+    </div>
+    
+    <div className="flex-1 flex flex-col gap-3 justify-end overflow-hidden">
+      <div className="h-12 w-3/4 rounded-xl border border-white/5 bg-white/[0.02] flex items-center px-4 self-start opacity-20 scale-90 -translate-y-8">
+        <p className="text-[10px] text-gray-600 font-mono">Message t-4: Discarded from context...</p>
+      </div>
+      <div className="h-12 w-2/3 rounded-xl border border-white/10 bg-white/[0.04] flex items-center px-4 self-end opacity-40 -translate-y-4">
+        <p className="text-[10px] text-gray-400 font-mono">Message t-3: Archiving to LTM</p>
+      </div>
+      <div className="h-12 w-5/6 rounded-xl border border-white/20 bg-white/[0.08] flex items-center px-4 self-start">
+        <p className="text-[10px] text-gray-200 font-mono">Message t-2: Critical variables identified</p>
+      </div>
+      <div className="h-12 w-4/5 rounded-xl border border-white/30 bg-white/10 flex items-center px-4 self-end border-l-4 border-l-emerald-500">
+        <p className="text-[10px] text-white font-mono">Message t-1: Processing instruction...</p>
+      </div>
+    </div>
+  </div>
+)
+
+const MemoryHierarchy = () => (
+  <div className="w-full aspect-video rounded-2xl border border-white/10 bg-black/40 p-8 flex items-center justify-center gap-12">
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-40 h-28 rounded-2xl border-2 border-emerald-500/40 bg-emerald-500/5 flex flex-col items-center justify-center gap-2 relative">
+        <div className="absolute -top-3 px-3 py-1 rounded-full bg-emerald-500 text-black text-[9px] font-black uppercase">Short Term</div>
+        <Gauge size={24} className="text-emerald-400" />
+        <span className="text-xs text-white font-bold">Working Memory</span>
+      </div>
+      <p className="text-[9px] text-gray-500 uppercase text-center max-w-[120px]">Contexto actual y variables inmediatas</p>
+    </div>
+    
+    <div className="h-12 w-px bg-white/20" />
+    
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-48 h-40 rounded-2xl border-2 border-white/20 bg-white/5 flex flex-col items-center justify-center gap-3 relative shadow-2xl">
+        <div className="absolute -top-3 px-3 py-1 rounded-full bg-white text-black text-[9px] font-black uppercase">Long Term</div>
+        <Database size={32} className="text-white" />
+        <div className="space-y-1 text-center">
+          <span className="block text-xs text-white font-bold">Knowledge Base</span>
+          <span className="block text-[9px] text-gray-400 italic">Matemáticas + Historial</span>
+        </div>
+      </div>
+      <p className="text-[9px] text-gray-500 uppercase text-center max-w-[140px]">Base semántica y errores recurrentes</p>
+    </div>
+  </div>
+)
+
+const SarcasmDetector = () => (
+  <div className="w-full aspect-[16/9] rounded-2xl border border-white/10 bg-black/40 p-6 flex flex-col">
+    <div className="flex items-center gap-3 mb-8">
+      <AlertCircle size={20} className="text-amber-500" />
+      <h4 className="text-sm font-black text-white uppercase tracking-widest">Detector de Inconsistencia Pragmática</h4>
+    </div>
+    
+    <div className="flex-1 flex items-center justify-around relative">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-white/20 flex items-center justify-center bg-black">
+        <RefreshCw size={24} className="text-white/40 animate-spin-slow" />
+      </div>
+      
+      <div className="flex flex-col items-center gap-4">
+        <div className="px-5 py-3 rounded-xl border border-white/10 bg-white/5 flex items-center gap-3">
+          <TrendingUp size={16} className="text-emerald-400" />
+          <span className="text-xs font-mono text-white">"¡Qué brillante!"</span>
+        </div>
+        <span className="text-[10px] text-gray-500 uppercase font-bold">Sentimiento (+)</span>
+      </div>
+      
+      <div className="flex flex-col items-center gap-4">
+        <div className="px-5 py-3 rounded-xl border border-white/10 bg-white/5 flex items-center gap-3">
+          <TrendingDown size={16} className="text-red-400" />
+          <span className="text-xs font-mono text-white">"El sistema falló"</span>
+        </div>
+        <span className="text-[10px] text-gray-500 uppercase font-bold">Evento (-)</span>
+      </div>
+    </div>
+    
+    <div className="mt-8 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-amber-500/20">
+          <CheckCircle2 size={16} className="text-amber-500" />
+        </div>
+        <div>
+          <p className="text-xs font-bold text-white uppercase">Sarcasmo Detectado</p>
+          <p className="text-[10px] text-amber-200/60">Activando protocolo: Ignorar emoción / Responder tecnicismo</p>
+        </div>
+      </div>
+      <div className="flex gap-1">
+        {[1,2,3].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />)}
+      </div>
+    </div>
+  </div>
+)
+
+const IntegrationsVisual = () => (
+  <div className="w-full aspect-video rounded-2xl border border-white/10 bg-black/40 p-8 flex flex-col gap-6">
+    <div className="flex items-center gap-4 border-b border-white/10 pb-4">
+      <Layers size={24} className="text-purple-400" />
+      <h4 className="text-xl font-black text-white uppercase tracking-tighter">Sistemas de Integración Avanzada</h4>
+    </div>
+    
+    <div className="flex-1 grid grid-cols-2 gap-8">
+      <div className="rounded-2xl border border-purple-500/20 bg-purple-500/5 p-6 flex flex-col gap-4 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-3xl -mr-16 -mt-16 group-hover:bg-purple-500/20 transition-colors" />
+        <div className="flex items-center gap-3 text-purple-300">
+          <Zap size={20} />
+          <span className="font-bold uppercase text-xs tracking-widest">Function Calling</span>
+        </div>
+        <p className="text-xs text-gray-300 leading-relaxed">
+          Capacidad del agente para ejecutar herramientas externas en tiempo real.
+        </p>
+        <div className="mt-auto space-y-2">
+          {['Render Manim', 'Plot Matplotlib', 'Cálculo Simbólico'].map(tool => (
+            <div key={tool} className="flex items-center gap-2 text-[10px] font-mono text-gray-400">
+              <div className="w-1 h-1 rounded-full bg-purple-500" />
+              {tool}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-6 flex flex-col gap-4 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl -mr-16 -mt-16 group-hover:bg-blue-500/20 transition-colors" />
+        <div className="flex items-center gap-3 text-blue-300">
+          <Database size={20} />
+          <span className="font-bold uppercase text-xs tracking-widest">UltraContext</span>
+        </div>
+        <p className="text-xs text-gray-300 leading-relaxed">
+          Sistema de compresión y recuperación de memoria profunda.
+        </p>
+        <div className="mt-auto flex items-center gap-4">
+          <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-blue-500 w-4/5 animate-pulse" />
+          </div>
+          <span className="text-[10px] font-mono text-blue-400">92% Hit Rate</span>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+// --- COMPONENTES UI REUTILIZABLES ---
 
 const participants = [
   'Castro Jimenez Andres David',
@@ -101,7 +374,7 @@ const conclusionItems = [
 ]
 
 const slideBase =
-  'rounded-3xl border border-white/10 bg-black/50 p-6 md:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.35)]'
+  'rounded-3xl border border-white/10 bg-black/90 p-6 md:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.5)] min-h-[500px] w-full backdrop-blur-md relative z-10'
 
 function SlideHeader({ title, tag }) {
   return (
@@ -172,39 +445,14 @@ function SlidePhase1() {
 
       <div className="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-5">
         <article className="rounded-2xl border border-white/10 bg-black/40 p-5">
-          <h3 className="text-white font-bold">Perfil del agente</h3>
-          <img
-            src="https://github.com/user-attachments/assets/03f2e690-f7a6-4541-b5eb-510a139cd1f6"
-            alt="Perfil del agente"
-            className="mt-3 w-full rounded-xl border border-white/10"
-          />
+          <h3 className="text-white font-bold mb-4">1.1 Perfil del Agente</h3>
+          <AgentProfileCard />
         </article>
 
         <article className="rounded-2xl border border-white/10 bg-black/40 p-5">
-          <h3 className="text-white font-bold">Necesidad de cada proceso</h3>
-          <div className="mt-4 space-y-4">
-            {profileScores.map((score) => (
-              <div key={score.label} className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-white">{score.label}</p>
-                  <p className="text-xs text-gray-300">{score.value}/{score.max}</p>
-                </div>
-                <div className="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-white to-gray-400" style={{ width: `${(score.value / score.max) * 100}%` }} />
-                </div>
-                <p className="mt-2 text-xs text-gray-400">{score.reason}</p>
-              </div>
-            ))}
-          </div>
+          <h3 className="text-white font-bold mb-4">Gráfico de Necesidad</h3>
+          <ProcessRadar />
         </article>
-      </div>
-
-      <div className="mt-5 rounded-2xl border border-white/10 bg-black/30 p-4">
-        <img
-          src="https://github.com/user-attachments/assets/db778299-7d6d-4c46-a4d2-7c28cdee7e09"
-          alt="Necesidad de cada proceso"
-          className="w-full rounded-xl border border-white/10"
-        />
       </div>
 
       <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-sm text-gray-300 leading-relaxed">
@@ -221,11 +469,7 @@ function SlidePhase2A() {
       <SlideHeader title="FASE 2A · Flujo del agente" tag="Pipeline operativo" />
 
       <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
-        <img
-          src="https://github.com/user-attachments/assets/51ac00ca-9f38-4a98-b249-c6520d5d4fbe"
-          alt="Flujo del agente"
-          className="w-full rounded-xl border border-white/10"
-        />
+        <FlowDiagram />
       </div>
 
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
@@ -366,33 +610,14 @@ function SlidePhase3B() {
 
       <div className="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-5">
         <article className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-          <h3 className="text-white font-bold">Diagrama conceptual</h3>
-          <div className="mt-4 rounded-xl border border-white/10 bg-black/40 p-4">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-2 text-center text-xs">
-              <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3 text-gray-500">Msg -4</div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3 text-gray-500">Msg -3</div>
-              <div className="rounded-lg border border-white/20 bg-white/[0.08] p-3 text-white">Msg -2</div>
-              <div className="rounded-lg border border-white/20 bg-white/[0.08] p-3 text-white">Msg -1</div>
-              <div className="rounded-lg border border-emerald-300/30 bg-emerald-500/10 p-3 text-emerald-200">Msg actual</div>
-            </div>
-            <p className="mt-3 text-xs text-gray-400">Los bloques con baja prioridad salen de ventana al ingresar nuevos turnos.</p>
-          </div>
+          <h3 className="text-white font-bold mb-4">Ventana de Contexto Actual</h3>
+          <ContextWindowVisual />
+          <p className="mt-3 text-xs text-gray-400">Los bloques con baja prioridad salen de ventana al ingresar nuevos turnos.</p>
         </article>
 
         <article className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-          <h3 className="text-white font-bold">Referencias visuales</h3>
-          <div className="mt-3 space-y-3">
-            <img
-              src="https://github.com/user-attachments/assets/c8fd9141-30f8-499f-834f-870b52293434"
-              alt="Ventana de contexto 1"
-              className="w-full rounded-xl border border-white/10"
-            />
-            <img
-              src="https://github.com/user-attachments/assets/0937ea07-b4d4-411a-a806-0c502e8b432b"
-              alt="Ventana de contexto 2"
-              className="w-full rounded-xl border border-white/10"
-            />
-          </div>
+          <h3 className="text-white font-bold mb-4">Jerarquía de Memoria</h3>
+          <MemoryHierarchy />
         </article>
       </div>
 
@@ -441,17 +666,12 @@ function SlidePhase4() {
 
       <div className="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-5">
         <article className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-          <h3 className="text-white font-bold">4.2 Manejo de ambiguedad</h3>
-          <div className="mt-3 space-y-2 text-sm text-gray-300">
+          <h3 className="text-white font-bold mb-4">4.2 Manejo de ambiguedad y Sarcasmo</h3>
+          <div className="mb-4 space-y-2 text-sm text-gray-300">
             <p><span className="text-white font-semibold">Input ambiguo:</span> "Genial, otra vez se bloqueo el sistema".</p>
             <p><span className="text-white font-semibold">Decision:</span> adjetivo positivo aplicado a evento tecnico negativo.</p>
-            <p><span className="text-white font-semibold">Respuesta esperada:</span> analisis tecnico de causa raiz.</p>
           </div>
-          <img
-            src="https://github.com/user-attachments/assets/32ac6f8d-119d-49a3-abf5-bd86d25fb5fb"
-            alt="Deteccion de sarcasmo"
-            className="mt-4 w-full rounded-xl border border-white/10"
-          />
+          <SarcasmDetector />
         </article>
 
         <article className="rounded-2xl border border-white/10 bg-black/40 p-5">
@@ -507,116 +727,198 @@ function SlideConclusion() {
   )
 }
 
-function PresentationPage({ onPresentingChange }) {
-  const [isPresenting, setIsPresenting] = useState(false)
-  const [activeSlide, setActiveSlide] = useState(0)
-  const [transitionDirection, setTransitionDirection] = useState('forward')
-
-  const slides = useMemo(
-    () => [
-      { id: 'intro', title: 'Introduccion', node: <SlideIntro /> },
-      { id: 'fase1', title: 'Fase 1', node: <SlidePhase1 /> },
-      { id: 'fase2a', title: 'Fase 2A', node: <SlidePhase2A /> },
-      { id: 'fase2b', title: 'Fase 2B', node: <SlidePhase2B /> },
-      { id: 'fase3a', title: 'Fase 3A', node: <SlidePhase3A /> },
-      { id: 'fase3b', title: 'Fase 3B', node: <SlidePhase3B /> },
-      { id: 'fase4', title: 'Fase 4', node: <SlidePhase4 /> },
-      { id: 'conclusion', title: 'Conclusion', node: <SlideConclusion /> },
-    ],
-    []
-  )
-
-  const goPrev = () => {
-    setTransitionDirection('backward')
-    setActiveSlide((prev) => (prev - 1 + slides.length) % slides.length)
-  }
-
-  const goNext = () => {
-    setTransitionDirection('forward')
-    setActiveSlide((prev) => (prev + 1) % slides.length)
-  }
-
-  useEffect(() => {
-    if (onPresentingChange) onPresentingChange(isPresenting)
-  }, [isPresenting, onPresentingChange])
-
-  useEffect(() => {
-    if (!isPresenting) return
-
-    const onKey = (event) => {
-      if (event.key === 'ArrowRight' || event.key === 'PageDown') goNext()
-      if (event.key === 'ArrowLeft' || event.key === 'PageUp') goPrev()
-      if (event.key === 'Escape') setIsPresenting(false)
-    }
-
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [isPresenting, slides.length])
-
-  const toolbarWrapperClass = isPresenting
-    ? 'sticky top-0 z-40 mb-4 h-16 group'
-    : 'sticky top-0 z-40 mb-4 py-3 px-2 md:px-0 backdrop-blur-md'
-
-  const toolbarInnerClass = isPresenting
-    ? 'max-w-7xl mx-auto mt-2 px-2 md:px-0 transition-all duration-300 opacity-0 -translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0'
-    : 'max-w-7xl mx-auto'
-
+function SlideIntegrations() {
   return (
-    <div className="h-full overflow-y-auto custom-scrollbar px-5 md:px-10 lg:px-14 py-8">
-      <div className={toolbarWrapperClass}>
-        <div className={toolbarInnerClass}>
-          <div className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-white/10 bg-black/40 px-3 py-2 backdrop-blur-md">
-            <div className="text-xs uppercase tracking-[0.22em] text-gray-400">Modo presentacion</div>
-            <div className="flex items-center gap-2">
-              <button onClick={goPrev} className="px-3 py-2 rounded-xl text-sm border border-white/15 bg-white/[0.03] hover:bg-white/10 text-white">Anterior</button>
-              <button onClick={goNext} className="px-3 py-2 rounded-xl text-sm border border-white/15 bg-white/[0.03] hover:bg-white/10 text-white">Siguiente</button>
-              <button
-                onClick={() => setIsPresenting((value) => !value)}
-                className={`px-3 py-2 rounded-xl text-sm border text-white ${
-                  isPresenting
-                    ? 'border-emerald-300/30 bg-emerald-500/10 hover:bg-emerald-500/20'
-                    : 'border-white/20 bg-white/10 hover:bg-white/20'
-                }`}
-              >
-                {isPresenting ? 'Salir de presentar' : 'Presentar'}
-              </button>
-            </div>
+    <section className={slideBase}>
+      <SlideHeader title="EXTRAS · Integraciones Críticas" tag="Tools + Context" />
+      <p className="text-gray-300 leading-relaxed mb-6">
+        Más allá del modelo base, JHAN AI utiliza protocolos de integración para interactuar con el mundo real y gestionar el conocimiento infinito.
+      </p>
+      <IntegrationsVisual />
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <article className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+            <Zap size={14} className="text-purple-400" /> Function Calling
+          </h4>
+          <p className="mt-2 text-xs text-gray-400">
+            Permite al bot "salir" de su caja de texto para generar videos de Manim o gráficas exactas, eliminando alucinaciones visuales.
+          </p>
+        </article>
+        <article className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+            <Database size={14} className="text-blue-400" /> UltraContext
+          </h4>
+          <p className="mt-2 text-xs text-gray-400">
+            Gestiona la memoria episódica. No solo recuerda qué se dijo, sino cómo falló el estudiante anteriormente para ajustar su pedagogía.
+          </p>
+        </article>
+      </div>
+    </section>
+  )
+}
+
+function PresentationPage({ isPresenting, setIsPresenting }) {
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [direction, setDirection] = useState('forward');
+  const [hasScroll, setHasScroll] = useState(false);
+  const slideContainerRef = useRef(null);
+
+  const slides = useMemo(() => [
+    { id: 'intro', node: <SlideIntro /> },
+    { id: 'fase1', node: <SlidePhase1 /> },
+    { id: 'fase2a', node: <SlidePhase2A /> },
+    { id: 'fase2b', node: <SlidePhase2B /> },
+    { id: 'fase3a', node: <SlidePhase3A /> },
+    { id: 'fase3b', node: <SlidePhase3B /> },
+    { id: 'integrations', node: <SlideIntegrations /> },
+    { id: 'fase4', node: <SlidePhase4 /> },
+    { id: 'conclusion', node: <SlideConclusion /> },
+  ], []);
+
+  const total = slides.length;
+  
+  const next = useCallback(() => {
+    setDirection('forward');
+    setActiveSlide((s) => (s + 1) % total);
+  }, [total]);
+  
+  const prev = useCallback(() => {
+    setDirection('backward');
+    setActiveSlide((s) => (s - 1 + total) % total);
+  }, [total]);
+
+  // Detect query param on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'presentation') {
+      setIsPresenting(true);
+    }
+  }, []);
+
+  // Detectar si la diapositiva tiene overflow (si es muy grande para el encuadre)
+  useEffect(() => {
+    if (!isPresenting) return;
+    
+    const checkOverflow = () => {
+      if (slideContainerRef.current) {
+        const { scrollHeight, clientHeight } = slideContainerRef.current;
+        setHasScroll(scrollHeight > clientHeight + 5); // +5px buffer
+      }
+    };
+
+    // Revisar tras un pequeño delay para asegurar que el DOM se haya pintado
+    const timeoutId = setTimeout(checkOverflow, 100);
+    window.addEventListener('resize', checkOverflow);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', checkOverflow);
+    };
+  }, [activeSlide, isPresenting]);
+
+  useEffect(() => {
+    if (!isPresenting) return;
+
+    const handleKey = (e) => {
+      // Ignorar navegación si estamos en un elemento editable/focuseado
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      
+      // Si la diapositiva tiene scroll, permitir que 'ArrowDown' y 'ArrowUp' la muevan 
+      // en vez de cambiar de diapositiva (Opcional: podemos dejar las flechas laterales para cambiar)
+      if (e.key === 'ArrowRight' || e.key === ' ') next();
+      if (e.key === 'ArrowLeft') prev();
+      if (e.key === 'ArrowDown') {
+        if (slideContainerRef.current) {
+          slideContainerRef.current.scrollBy({ top: 50, behavior: 'smooth' });
+        }
+      }
+      if (e.key === 'ArrowUp') {
+        if (slideContainerRef.current) {
+          slideContainerRef.current.scrollBy({ top: -50, behavior: 'smooth' });
+        }
+      }
+      if (e.key === 'Escape') setIsPresenting(false);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [isPresenting, next, prev]);
+
+  // VISTA DE PRESENTACIÓN (OVERLAY FORZADO)
+  if (isPresenting) {
+    return (
+      <div 
+        className="fixed inset-0 bg-[#050505] flex flex-col items-center justify-center p-8 overflow-hidden"
+        style={{ zIndex: 99999 }}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03)_0%,transparent_70%)] pointer-events-none" />
+
+        {/* Controles superiores */}
+        <div className="absolute top-0 w-full h-32 flex justify-center items-start pt-8 z-[10000] opacity-0 hover:opacity-100 transition-opacity duration-300">
+          <div className="flex gap-4 items-center liquid-glass px-4 py-2 rounded-2xl border border-white/10 bg-black/50 backdrop-blur-md">
+            <button onClick={prev} className="p-2 glass-button"><ChevronLeft size={20}/></button>
+            <span className="text-white/60 font-mono text-sm">{activeSlide + 1} / {total}</span>
+            <button onClick={next} className="p-2 glass-button"><ChevronRight size={20}/></button>
+            <button 
+              onClick={() => setIsPresenting(false)} 
+              className="ml-4 px-4 py-2 bg-white text-black text-xs font-black rounded-xl hover:bg-gray-200 transition-colors uppercase tracking-widest"
+            >
+              Salir (Esc)
+            </button>
           </div>
+        </div>
+
+        {/* Diapositiva actual con contenedor scrollable si es necesario */}
+        <div 
+          key={activeSlide} 
+          ref={slideContainerRef}
+          className={`w-full max-w-[1200px] slide-frame ${direction === 'forward' ? 'slide-forward' : 'slide-backward'} 
+                     overflow-y-auto max-h-[85vh] rounded-3xl custom-scrollbar relative px-2 pb-4 pt-1`}
+        >
+          {slides[activeSlide].node}
+        </div>
+
+        {/* Indicador visual inferior */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/60 backdrop-blur-md px-5 py-2 rounded-full border border-white/10 z-[10000]">
+          <div className="flex gap-1.5">
+            {slides.map((_, i) => (
+              <div 
+                key={i} 
+                className={`h-1.5 rounded-full transition-all duration-300 ${i === activeSlide ? 'w-6 bg-white' : 'w-1.5 bg-white/20'}`} 
+              />
+            ))}
+          </div>
+          <div className="w-px h-3 bg-white/20"></div>
+          <span className="text-xs font-mono font-bold text-white/80 tracking-widest">
+            {activeSlide + 1} / {total}
+          </span>
         </div>
       </div>
+    );
+  }
 
-      {isPresenting ? (
-        <div className="max-w-7xl mx-auto min-h-[calc(100vh-180px)] flex flex-col justify-center pb-8">
-          <div key={`${slides[activeSlide].id}-${transitionDirection}`} className={`slide-frame ${transitionDirection === 'forward' ? 'slide-forward' : 'slide-backward'}`}>
-            {slides[activeSlide].node}
-          </div>
+  // VISTA NORMAL (SCROLL)
+  return (
+    <div className="h-full overflow-y-auto bg-[#020202] p-8 custom-scrollbar">
+      <div className="flex justify-between items-center mb-12 border-b border-white/5 pb-8">
+        <div>
+          <h2 className="text-white text-4xl font-black tracking-tighter">Proyecto JHAN AI</h2>
+          <p className="text-gray-500 text-[10px] uppercase tracking-[0.4em] mt-2">Cortex Protocol · Documentación Técnica</p>
+        </div>
+        <button 
+          onClick={() => setIsPresenting(true)}
+          className="bg-white text-black px-8 py-4 rounded-2xl font-black text-sm hover:scale-105 transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] uppercase tracking-widest"
+        >
+          Presentar Proyecto
+        </button>
+      </div>
 
-          <div className="mt-6 flex items-center justify-between gap-3 flex-wrap">
-            <div className="text-xs uppercase tracking-[0.2em] text-gray-500">Diapositiva {activeSlide + 1} de {slides.length}</div>
-            <div className="flex items-center gap-2">
-              {slides.map((slide, index) => (
-                <button
-                  key={slide.id}
-                  onClick={() => {
-                    setTransitionDirection(index > activeSlide ? 'forward' : 'backward')
-                    setActiveSlide(index)
-                  }}
-                  aria-label={`Ir a diapositiva ${index + 1}`}
-                  className={`h-2.5 rounded-full transition-all ${activeSlide === index ? 'w-8 bg-white' : 'w-2.5 bg-white/25 hover:bg-white/50'}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="max-w-7xl mx-auto space-y-8 pb-8">
-          {slides.map((slide) => (
-            <div key={slide.id}>{slide.node}</div>
-          ))}
-        </div>
-      )}
+      <div className="flex flex-col gap-20 maxWidth-[1200px] mx-auto pb-20">
+        {slides.map((s) => (
+          <div key={s.id}>{s.node}</div>
+        ))}
+      </div>
     </div>
-  )
+  );
 }
 
 export default PresentationPage

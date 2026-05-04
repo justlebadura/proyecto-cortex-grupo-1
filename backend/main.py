@@ -115,8 +115,112 @@ def uc_safe_append(context_id: str, payload: dict):
             uc_client = None
             print("Warning: UltraContext disabled after repeated failures")
 
+from fastapi.responses import StreamingResponse
+import zipfile
 import subprocess
 import shutil
+
+class ExportRequest(BaseModel):
+    messages: list[dict]
+
+def markdown_to_latex(text: str) -> str:
+    if not text: return ""
+
+    text = text.replace("\r\n", "\n")
+
+    blocks = []
+    def rep_code(m):
+        blocks.append(m.group(2))
+        return f"CODEBLOCK{len(blocks)-1}CODEBLOCK"
+    text = re.sub(r"```([a-zA-Z0-9_]*)\s*\n(.*?)```", rep_code, text, flags=re.DOTALL)
+
+    dmaths = []
+    def rep_dmath(m):
+        dmaths.append(m.group(1))
+        return f"DMATH{len(dmaths)-1}DMATH"
+    text = re.sub(r"\$\$(.*?)\$\$", rep_dmath, text, flags=re.DOTALL)
+
+    imaths = []
+    def rep_imath(m):
+        imaths.append(m.group(1))
+        return f"IMATH{len(imaths)-1}IMATH"
+    text = re.sub(r"\$(.*?)\$", rep_imath, text)
+
+    # Basic escaping
+    text = text.replace('\\', '\\textbackslash ')
+    text = text.replace('%', '\\%')
+    text = text.replace('&', '\\&')
+    text = text.replace('_', '\\_')
+    text = text.replace('#', '\\#')
+    
+    text = re.sub(r"(?m)^\\#\\#\\#\\#\\# (.*?)$", r"\\subsubsection*{\1}", text)
+    text = re.sub(r"(?m)^\\#\\#\\#\\# (.*?)$", r"\\subsection*{\1}", text)
+    text = re.sub(r"(?m)^\\#\\#\\# (.*?)$", r"\\section*{\1}", text)
+    text = re.sub(r"(?m)^\\#\\# (.*?)$", r"\\part*{\1}", text)
+    text = re.sub(r"(?m)^\\# (.*?)$", r"\\chapter*{\1}", text)
+
+    text = re.sub(r"\*\*(.*?)\*\*", r"\\textbf{\1}", text)
+    text = re.sub(r"\*(.*?)\*", r"\\textit{\1}", text)
+    text = re.sub(r"(?m)^> (.*?)$", r"\\begin{quote}\1\\end{quote}", text)
+
+    for i, c in enumerate(blocks):
+        text = text.replace(f"CODEBLOCK{i}CODEBLOCK", f"\\begin{{verbatim}}\n{c}\n\\end{{verbatim}}")
+    for i, m in enumerate(dmaths):
+        text = text.replace(f"DMATH{i}DMATH", f"$${m}$$")
+    for i, m in enumerate(imaths):
+        text = text.replace(f"IMATH{i}IMATH", f"${m}$")
+        
+    return text
+
+@app.post("/export_latex")
+async def export_latex(request: ExportRequest):
+    tex_content = """\\documentclass{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage{amsmath}
+\\usepackage{graphicx}
+\\usepackage{hyperref}
+\\usepackage{geometry}
+\\geometry{a4paper, margin=1in}
+\\title{Conversaci\\'{o}n Jhan AI - Cortex Edition}
+\\begin{document}
+\\maketitle
+
+"""
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
+        img_counter = 0
+        for msg in request.messages:
+            role = msg.get("role", "unknown")
+            content = msg.get("content", "")
+            media = msg.get("media", None)
+            
+            tex_content += f"\\section*{{{role.capitalize()}}}\n\n"
+            tex_content += f"{markdown_to_latex(content)}\n\n"
+
+            if media:
+                if media.get("type") == "image":
+                    img_data = base64.b64decode(media["data"])
+                    filename = f"img_{img_counter}.png"
+                    zip_file.writestr(filename, img_data)
+                    tex_content += f"\\begin{{center}}\n\\includegraphics[width=0.8\\textwidth]{{{filename}}}\n\\end{{center}}\n\n"
+                    img_counter += 1
+                elif media.get("type") == "video":
+                    vid_data = base64.b64decode(media["data"])
+                    filename = f"video_{img_counter}.mp4"
+                    zip_file.writestr(filename, vid_data)
+                    tex_content += f"\\textbf{{[Video Manim adjunto en el ZIP: {filename}]}}\n\n"
+                    img_counter += 1
+
+        tex_content += "\\end{document}\n"
+        zip_file.writestr("main.tex", tex_content.encode("utf-8"))
+
+    zip_buffer.seek(0)
+    return StreamingResponse(
+        zip_buffer, 
+        media_type="application/zip", 
+        headers={"Content-Disposition": "attachment; filename=export_jhan_ai.zip"}
+    )
+
 
 # --- UTILS DE EJECUCIÓN (AVANZADO) ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -880,16 +984,11 @@ def normalize_markdown_response(text: str) -> str:
 
     for h in headings:
         normalized = re.sub(
-            rf"(^|\n)\s*#{0,6}\s*{re.escape(h)}\s*",
-            f"\n\n## {h}\n\n",
+            rf"(^|\n)\s*#{1,6}\s*{re.escape(h)}\s*",
+            f"\n\n### {h}\n\n",
             normalized,
             flags=re.IGNORECASE,
         )
-
-    # Limpia encabezados residuales tipo '## #' o '#'.
-    normalized = re.sub(r"(?m)^\s*##\s*#\s*", "## ", normalized)
-    normalized = re.sub(r"(?m)^\s*##\s*#\s*$\n?", "", normalized)
-    normalized = re.sub(r"(?m)^\s*#\s*$\n?", "", normalized)
 
     # Si aparece código python suelto (sin fences), envolverlo.
     if "```" not in normalized:
