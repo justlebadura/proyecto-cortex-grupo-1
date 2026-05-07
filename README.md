@@ -180,5 +180,31 @@ THEN (ejecutar análisis de equivalencia lógica antes de emitir un juicio).
 2. **Apertura Socrática:** Si el método es desconocido, el agente debe solicitar al estudiante la justificación teórica antes de corregir, evitando el cierre prematuro del diálogo.
 3. **Filtro de Autoridad:** Queda prohibida la frase "Ese método es incorrecto porque no es el estándar". Se sustituirá por: "Analicemos la validez de su planteamiento bajo los axiomas correspondientes".
 
----
-**Responsables de Auditoría:** Castro Jiménez, Argumedo Mejía, Prasca Pedraza.
+
+# FASE 5: EL MOTOR LÓGICO (REASONING & BIASES)
+
+[cite_start]En esta fase, hemos consolidado el "cerebro" de **JHAN AI** mediante la formalización de su estructura de toma de decisiones y la validación de sus procesos de razonamiento deductivo. [cite: 4, 26]
+
+## 5.1 Algoritmo Maestro: Árbol de Decisión
+[cite_start]Para garantizar que el agente resuelva problemas de forma lógica y sin "cabos sueltos", se ha implementado un flujo basado en el **Razonamiento Deductivo**. [cite: 11, 26] [cite_start]El siguiente diagrama mapea el proceso desde que el estudiante plantea una duda hasta que se entrega una solución validada. [cite: 6, 7]
+
+
+
+> [cite_start]**Nota:** El diagrama anterior representa la **V2 (Final)** del algoritmo, tras haber superado la prueba de escritorio (Dry Run) en la Semana 15, eliminando callejones sin salida en la lógica de evaluación de derivadas e integrales. [cite: 20, 22, 23]
+
+## 5.2 Justificación Teórica: Mitigación de Sesgos
+[cite_start]Siguiendo los fundamentos de **Daniel Kahneman** en *Thinking, Fast and Slow*, nuestro agente opera bajo un **Sistema 2** (analítico y lento) para evitar los atajos mentales del Sistema 1. [cite: 16, 27]
+
+* [cite_start]**Sesgo Mitigado:** Sesgo de Confirmación Pedagógica. [cite: 17]
+* [cite_start]**Fundamento:** Los humanos tienden a buscar información que confirme sus creencias previas. [cite: 19] En un entorno educativo, esto causaría que el bot rechace métodos válidos solo por no ser "estándar".
+* **Contra-Medida Lógica:** El algoritmo está programado para ejecutar un **Análisis de Equivalencia**. [cite_start]Antes de emitir un juicio negativo sobre un procedimiento inusual, el bot debe buscar activamente dos axiomas matemáticos que puedan validar el planteamiento del alumno. [cite: 19]
+
+## 5.3 Debugging Lógico (Prueba de Turing Lógica)
+[cite_start]Durante la Semana 15, se realizó una simulación de recorrido con el siguiente caso de prueba crítico: [cite: 24, 28]
+
+* **Caso:** Estudiante resuelve una integral mediante una sustitución no convencional que el bot no tiene en su "LTM Semántica" inmediata.
+* [cite_start]**Resultado del Debugging:** Se detectó un error donde el bot finalizaba la sesión por "inconsistencia". [cite: 22]
+* **Solución Aplicada:** Se añadió un nodo de decisión extra: *¿El resultado final es algebraicamente equivalente al esperado?*. [cite_start]Si la respuesta es SÍ, el bot ahora valida el ingenio del estudiante en lugar de corregirlo. [cite: 23]
+
+
+<img width="1334" height="653" alt="image" src="https://github.com/user-attachments/assets/33ec60a8-482d-4d2e-8e1e-1c749ccf4075" />
