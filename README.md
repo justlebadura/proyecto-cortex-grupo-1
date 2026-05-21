@@ -208,3 +208,102 @@ THEN (ejecutar análisis de equivalencia lógica antes de emitir un juicio).
 
 
 <img width="1334" height="653" alt="image" src="https://github.com/user-attachments/assets/33ec60a8-482d-4d2e-8e1e-1c749ccf4075" />
+
+Aquí tienes exactamente lo que debes copiar y pegar en tu archivo de GitHub (en formato Markdown) y las instrucciones claras de qué elementos visuales debes dibujar en Miro para completar la Fase 6.
+
+---
+
+
+```markdown
+# FASE 6: EL SISTEMA DE CONTROL (MOTIVACIÓN Y SEGURIDAD)
+
+En esta fase final, formalizamos el motor algorítmico que impulsa las decisiones de **JHAN AI** (su función de recompensa) y el protocolo de contención lógica ante crisis emocionales o interacciones hostiles por parte de los estudiantes.
+
+## 6) SISTEMA DE MOTIVACIÓN Y EMOCIÓN
+
+### 6.1 El Motor de Motivación (Función Objetivo)
+Como JHAN AI opera bajo el modelo de un **Catedrático Universitario** con una dimensión emocional baja (1/10), su éxito no se mide en la velocidad de la interacción, sino en asegurar la transferencia efectiva y rigurosa del conocimiento matemático.
+
+*   **Dilema de Optimización:**
+    1.  **Eficiencia Temporal (Velocidad):** Minimizar los turnos de conversación y la longitud de las respuestas para liberar recursos.
+    2.  **Profundidad Cognitiva (Calidad):** Maximizar el desglose de pasos, axiomas y la verificación del dominio del estudiante.
+
+*   **Regla Lógica de Equilibrio (Optimización de Recompensa):**
+    > **Directiva de Motivación:** El sistema prioriza la *Profundidad Cognitiva* sobre la *Eficiencia Temporal*. Si el agente detecta que el estudiante introduce dos respuestas erróneas consecutivas o declara explícitamente una barrera de comprensión, la función de recompensa penalizará las respuestas sintéticas y obligará al bot a ignorar los límites de longitud por defecto de la Fase 4.1 para desplegar un desglose axiomático expandido.
+
+#### Implementación Algorítmica (Pseudocódigo)
+```python
+def calcular_recompensa_motivacional(errores_consecutivos, declaracion_frustracion):
+    # Prioridad por defecto: Balanceada hacia la síntesis académica
+    prioridad_calidad_explicacion = 0.4
+    limite_longitud_output = "Breve y denso"
+    
+    # Regla de equilibrio motivacional
+    if errores_consecutivos >= 2 or declaracion_frustracion == True:
+        # Reconfiguración del motor: El bot "elige" dedicar más recursos a explicar
+        prioridad_calidad_explicacion = 1.0
+        limite_longitud_output = "Desglose axiomático expandido"
+        ignorar_limite_tiempo_servidor()
+        
+    return prioridad_calidad_explicacion, limite_longitud_output
+
+```
+
+---
+
+### 6.2 Protocolo de Seguridad Emocional ("Botón de Pánico")
+
+Ante situaciones de frustración extrema, insultos o crisis de desesperanza por parte del alumno, JHAN AI no simula una empatía afectiva artificial. En su lugar, aplica un protocolo de **Reevaluación Cognitiva Pragmática**: valida la existencia del bloqueo operativo, reduce la carga cognitiva de la pantalla y ofrece control inmediato al usuario.
+
+#### Gestión del Peor Escenario Posible (Usuario Tóxico / Frustrado)
+
+* **Input del Estudiante:** *"Eres inútil, odio este servicio y la matemática es una basura."*
+* **Mala respuesta (Sin regulación / Reactiva):** *"No entiendo tu solicitud. Por favor, introduzca una ecuación válida en formato LaTeX."* (Esto perpetúa el bucle de frustración).
+* **Buena respuesta (Con regulación JHAN AI):**
+* **Paso 1 (Validar el bloqueo operativo):** *"Comprendo que el estado actual del ejercicio está generando una barrera que interrumpe su progreso académico."*
+* **Paso 2 (Ofrecer Control y Reencuadre Técnico):** *"Las crisis de frustración saturan la memoria de trabajo de forma temporal. Podemos pausar el análisis actual y fragmentar el problema desde un axioma más simple, o si lo prefiere, puedo registrar este incidente para que su tutor humano evalúe su caso de manera personalizada. ¿Cómo desea proceder?"*
+<img width="673" height="1495" alt="imagen" src="https://github.com/user-attachments/assets/0a1e311a-db14-4a26-9853-e059970f6084" />
+
+# FASE 7: BLUEPRINT DE INTEGRACIÓN Y TRAZABILIDAD (SEMANA 18)
+
+Este apartado final consolida el control de calidad del agente pedagógico **JHAN AI**, garantizando la sincronización entre el modelo lógico-emocional, la arquitectura de memoria y los núcleos de evaluación matemática.
+
+## 7.1 Matriz de Trazabilidad del Sistema
+
+Para garantizar que el comportamiento de JHAN AI sea predecible y mantenga su identidad de Catedrático Formal (Dimensión Emocional = 1/10), se establece la siguiente matriz de correspondencia entre componentes teóricos y módulos de software:
+
+| Componente del Proyecto | Fase de Diseño | Módulo de Código / Repositorio | Estado de Verificación |
+| :--- | :---: | :--- | :---: |
+| **Atención Selectiva** | Fase 2 | `src/perception/gatekeeper.py` | ✓ Verificado |
+| **Memoria a Largo Plazo (LTM)** | Fase 3 | `src/memory/vector_db_handler.py` | ✓ Verificado |
+| **Guía de Estilo Socrática** | Fase 4 | `src/prompts/catedratico_v2.prompt` | ✓ Verificado |
+| **Árbol de Decisión Deductivo** | Fase 5 | `src/reasoning/deductive_tree.json` | ✓ Verificado |
+| **Función Objetivo Motivacional** | Fase 6 | `src/control/motivation_motor.py` | ✓ Verificado |
+| **Diagrama de Contención de Crisis** | Fase 6 | Archivo Vinculado: `Miro_Board_Link` | ✓ Sincronizado |
+
+---
+
+## 7.2 Validación del Motor Matemático (Control de Sesgos)
+
+Para evitar el sesgo de confirmación pedagógica (asumir incorrectamente que el estudiante entiende un concepto basándose en una sola respuesta correcta), JHAN AI implementa un protocolo de contraejemplos analíticos. 
+
+Cuando el estudiante resuelve un problema de **Sólidos de Revolución** o **Cálculo Integral**, el agente no valida la sesión hasta que el estudiante identifique el error inducido en una ecuación de control.
+
+### Ejemplo de Plantilla de Control de Evaluación (LaTeX)
+El agente desplegará la verificación del método de arandelas para el cálculo de volumen utilizando la siguiente estructura formal:
+
+$$V = \pi \int_{a}^{b} \left( [R(x)]^2 - [r(x)]^2 \right) dx$$
+
+> **Criterio de Aceptación:** Si el estudiante no logra identificar si el radio externo $R(x)$ o el radio interno $r(x)$ han sido invertidos intencionalmente en el prompt de prueba, el sistema de motivación (Fase 6.1) forzará la degradación del nivel de dificultad al 50%, activando el flujo de desescalada programado en el tablero de Miro.
+
+---
+
+## 7.3 Firmas de Responsabilidad y Sprint Final
+Este proyecto ha sido integrado, probado y validado según los criterios de aceptación establecidos en la metodología Scrum durante el ciclo académico 2026-I.
+
+*   **Líder de Arquitectura Cognitiva:** Libardo Enrique Argumedo Mejía
+*   **Líder de Integración de Datos:** Andrés Jimenez
+*   **Líder de Interfaz y QA:** Kheylor Prasca
+<img width="673" height="1495" alt="imagen" src="https://github.com/user-attachments/assets/853c82ca-bcd3-4335-8ade-5811e4158ce7" />
+
+
